@@ -1,0 +1,24 @@
+{
+	"name": "meal-plannr",
+	"version": "1.0.0",
+	"description": "Meal Planning app",
+	"homepage": "https://github.com/macrosbysara/meal-plannr#readme",
+	"bugs": {
+		"url": "https://github.com/macrosbysara/meal-plannr/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/macrosbysara/meal-plannr.git"
+	},
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"license": "MIT",
+	"author": "K.J. Roelke",
+	"type": "commonjs",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	}
+}
