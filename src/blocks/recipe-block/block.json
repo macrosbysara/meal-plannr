@@ -1,0 +1,18 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "meal-plannr/recipe-block",
+	"version": "1.0.0",
+	"title": "Recipe Block",
+	"category": "widgets",
+	"icon": "block-default",
+	"keywords": ["recipe", "meal", "food"],
+	"description": "A block that renders recipes",
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"multiple": false
+	},
+	"attributes": {},
+	"editorScript": "file:./index.tsx"
+}
