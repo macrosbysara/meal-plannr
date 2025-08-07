@@ -1,24 +1,15 @@
 {
 	"name": "meal-plannr",
 	"version": "1.0.0",
-	"description": "Meal Planning app",
-	"homepage": "https://github.com/macrosbysara/meal-plannr#readme",
-	"bugs": {
-		"url": "https://github.com/macrosbysara/meal-plannr/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/macrosbysara/meal-plannr.git"
-	},
-	"workspaces": [
-		"apps/*",
-		"packages/*"
-	],
-	"license": "MIT",
+	"description": "",
+	"license": "GPL-2.0-or-later",
 	"author": "K.J. Roelke",
-	"type": "commonjs",
-	"main": "index.js",
+	"main": "src/index.ts",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"start": "wp-scripts start --blocks-manifest --webpack-copy-php",
+		"build": "wp-scripts build --blocks-manifest --webpack-copy-php"
+	},
+	"devDependencies": {
+		"@wordpress/scripts": "^30.20.0"
 	}
 }
