@@ -17,18 +17,26 @@ class Theme_Init {
 	 * Constructor.
 	 */
 	public function __construct() {
-		$this->init();
+		register_activation_hook( __FILE__, array( $this, 'init' ) );
+		add_action( 'after_setup_theme', array( $this, 'block_theme_support' ), 50 );
+		add_action( 'init', array( $this, 'register_block_assets' ) );
+		add_action( 'block_categories_all', array( $this, 'register_block_pattern_categories' ) );
+		$this->load_required_files();
 	}
 
 	/**
 	 * Initialize the theme.
 	 */
 	public function init() {
-		register_activation_hook( __FILE__, array( $this, 'create_tables' ) );
-		add_action( 'after_setup_theme', array( $this, 'block_theme_support' ), 50 );
+		$this->create_tables();
+	}
 
-		add_action( 'init', array( $this, 'register_block_assets' ) );
-		add_action( 'block_categories_all', array( $this, 'register_block_pattern_categories' ) );
+	/**
+	 * Load required files.
+	 */
+	private function load_required_files() {
+		require_once plugin_dir_path( __DIR__ ) . 'includes/class-cpt-handler.php';
+		new CPT_Handler();
 	}
 
 	/**
