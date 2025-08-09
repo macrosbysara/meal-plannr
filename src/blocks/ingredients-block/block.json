@@ -1,0 +1,44 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "meal-plannr/recipe-ingredients-block",
+	"version": "1.0.0",
+	"title": "Recipe Ingredient",
+	"category": "widgets",
+	"icon": "carrot",
+	"keywords": [ "ingredients" ],
+	"description": "A block that renders recipe ingredients",
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"multiple": true
+	},
+	"attributes": {
+		"name": {
+			"type": "string",
+			"default": ""
+		},
+		"quantityVolume": {
+			"type": "number",
+			"default": 0
+		},
+		"unitVolume": {
+			"type": "string",
+			"default": ""
+		},
+		"quantityWeight": {
+			"type": "number",
+			"default": 0
+		},
+		"unitWeight": {
+			"type": "string",
+			"default": ""
+		},
+		"description": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"parent": [ "meal-plannr/recipe-block" ],
+	"editorScript": "file:./index.tsx"
+}
