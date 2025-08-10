@@ -19,7 +19,7 @@
 			"default": ""
 		},
 		"quantityVolume": {
-			"type": "number",
+			"type": "string",
 			"default": 0
 		},
 		"unitVolume": {
@@ -27,7 +27,7 @@
 			"default": ""
 		},
 		"quantityWeight": {
-			"type": "number",
+			"type": "string",
 			"default": 0
 		},
 		"unitWeight": {
@@ -39,6 +39,6 @@
 			"default": ""
 		}
 	},
-	"parent": [ "meal-plannr/recipe-block" ],
+	"parent": [ "meal-plannr/ingredients-container-block" ],
 	"editorScript": "file:./index.tsx"
 }

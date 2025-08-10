@@ -14,18 +14,29 @@ registerBlockType( metadata.name, {
 			unitWeight,
 			notes,
 		} = attributes;
-		const blockProps = useBlockProps.save();
+		const blockProps = useBlockProps.save( {
+			style: {
+				display: 'flex',
+				gap: '1rem',
+				flexWrap: 'wrap',
+				alignItems: 'center',
+			},
+		} );
 		return (
-			<div { ...blockProps }>
+			<li { ...blockProps }>
 				<span className="ingredient-name">{ name }</span>
-				<span>
-					{ quantityVolume } { unitVolume }
-				</span>
-				<span>
-					{ quantityWeight } { unitWeight }
-				</span>
 				<span className="ingredient-notes">{ notes }</span>
-			</div>
+				{ quantityVolume && (
+					<span>
+						{ quantityVolume } { unitVolume }
+					</span>
+				) }
+				{ quantityWeight && (
+					<span>
+						{ quantityWeight } { unitWeight }
+					</span>
+				) }
+			</li>
 		);
 	},
 } );

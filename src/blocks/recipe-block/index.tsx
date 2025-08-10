@@ -18,7 +18,7 @@ registerBlockType( metadata.name, {
 			template: [
 				[
 					'meal-plannr/recipe-meta-block',
-					{ lock: { move: true, remove: true } },
+					{ lock: { move: false, remove: true } },
 				],
 				[
 					'core/group',
@@ -32,7 +32,7 @@ registerBlockType( metadata.name, {
 							'core/heading',
 							{ level: 2, content: 'Ingredients' },
 						],
-						[ 'meal-plannr/recipe-ingredients-block' ],
+						[ 'meal-plannr/ingredients-container-block' ],
 					],
 				],
 				[
