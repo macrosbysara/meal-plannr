@@ -3,6 +3,7 @@ import {
 	SelectControl,
 	TextareaControl,
 } from '@wordpress/components';
+import { useState, useEffect } from '@wordpress/element';
 export default function EditSelectedBlock( { attributes, setAttributes } ) {
 	const {
 		name,
@@ -12,6 +13,25 @@ export default function EditSelectedBlock( { attributes, setAttributes } ) {
 		unitWeight,
 		description,
 	} = attributes;
+	const [ weight, setWeight ] = useState( quantityWeight );
+	const [ volume, setVolume ] = useState( quantityVolume );
+
+	useEffect( () => {
+		if ( '' !== volume && ! isNaN( Number( volume ) ) ) {
+			setAttributes( { quantityWeight: Number( weight ) } );
+		} else {
+			setAttributes( { quantityWeight: 0 } );
+		}
+	}, [ weight ] );
+
+	useEffect( () => {
+		if ( '' !== volume && ! isNaN( Number( volume ) ) ) {
+			setAttributes( { quantityVolume: Number( volume ) } );
+		} else {
+			setAttributes( { quantityVolume: 0 } );
+		}
+	}, [ volume ] );
+
 	return (
 		<>
 			<TextControl
@@ -19,6 +39,7 @@ export default function EditSelectedBlock( { attributes, setAttributes } ) {
 				__nextHasNoMarginBottom
 				label={ 'Ingredient Name' }
 				value={ name }
+				placeholder="Enter ingredient name"
 				onChange={ ( value ) => setAttributes( { name: value } ) }
 			/>
 			<TextareaControl
@@ -32,16 +53,12 @@ export default function EditSelectedBlock( { attributes, setAttributes } ) {
 
 			<div style={ { display: 'flex', gap: '8px' } }>
 				<TextControl
-					type="number"
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ 'Qty (Volume)' }
-					value={ quantityVolume }
-					onChange={ ( value ) =>
-						setAttributes( {
-							quantityVolume: value,
-						} )
-					}
+					placeholder="2"
+					value={ volume }
+					onChange={ ( value ) => setVolume( value ) }
 				/>
 				<SelectControl
 					__next40pxDefaultSize
@@ -50,9 +67,9 @@ export default function EditSelectedBlock( { attributes, setAttributes } ) {
 					value={ unitVolume }
 					options={ [
 						{ label: 'Select unit', value: '' },
-						{ label: 'cup', value: 'cup' },
-						{ label: 'tbsp', value: 'tbsp' },
-						{ label: 'tsp', value: 'tsp' },
+						{ label: 'Cup', value: 'cup' },
+						{ label: 'Tbsp', value: 'tbsp' },
+						{ label: 'Tsp', value: 'tsp' },
 						{ label: 'ml', value: 'ml' },
 						{ label: 'fl. oz.', value: 'fl. oz.' },
 					] }
@@ -66,14 +83,12 @@ export default function EditSelectedBlock( { attributes, setAttributes } ) {
 				<TextControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					type="number"
+					placeholder="2"
 					label={ 'Qty (Weight)' }
-					value={ quantityWeight }
-					onChange={ ( value ) =>
-						setAttributes( {
-							quantityWeight: value,
-						} )
-					}
+					value={ weight }
+					onChange={ ( value ) => {
+						setWeight( value );
+					} }
 				/>
 				<SelectControl
 					__next40pxDefaultSize

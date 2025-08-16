@@ -12,37 +12,43 @@ registerBlockType( metadata.name, {
 			unitVolume,
 			quantityWeight,
 			unitWeight,
-			notes,
+			description,
 		} = attributes;
-		const blockProps = useBlockProps.save( {
-			style: {
-				display: 'flex',
-				gap: '1rem',
-				flexWrap: 'wrap',
-				alignItems: 'center',
-			},
-		} );
+		const blockProps = useBlockProps.save();
 		const hasWeight = 0 !== quantityWeight;
 		const hasVolume = 0 !== quantityVolume;
 		return (
 			<li { ...blockProps }>
-				<span className="ingredient-name">{ name }</span>
-				<span className="ingredient-notes">{ notes }</span>
-				{ hasVolume && (
-					<span>
-						{ quantityVolume } { unitVolume }
-					</span>
-				) }
-				{ hasWeight &&
-					( hasVolume ? (
-						<span>
-							({ quantityWeight } { unitWeight })
+				<div
+					style={ {
+						display: 'flex',
+						gap: '.5rem',
+						flexWrap: 'wrap',
+						alignItems: 'center',
+					} }
+				>
+					<span className="ingredient-name">{ name }</span>
+					{ description && (
+						<span className="ingredient-notes">
+							{ description }
 						</span>
-					) : (
+					) }
+					{ hasVolume && (
 						<span>
-							{ quantityWeight } { unitWeight }
+							{ quantityVolume } { unitVolume }
 						</span>
-					) ) }
+					) }
+					{ hasWeight &&
+						( hasVolume ? (
+							<span>
+								({ quantityWeight } { unitWeight })
+							</span>
+						) : (
+							<span>
+								{ quantityWeight } { unitWeight }
+							</span>
+						) ) }
+				</div>
 			</li>
 		);
 	},
