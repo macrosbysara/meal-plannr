@@ -17,76 +17,39 @@ class Theme_Init {
 	 * Constructor.
 	 */
 	public function __construct() {
+		$this->load_required_files();
 		register_activation_hook( __FILE__, array( $this, 'init' ) );
 		add_action( 'after_setup_theme', array( $this, 'block_theme_support' ), 50 );
 		add_action( 'init', array( $this, 'register_block_assets' ) );
 		add_action( 'block_categories_all', array( $this, 'register_block_pattern_categories' ) );
-		$this->load_required_files();
 	}
 
 	/**
 	 * Initialize the theme.
 	 */
 	public function init() {
-		$this->create_tables();
+		$db_handler = new Table_Handler();
 	}
 
 	/**
 	 * Load required files.
 	 */
 	private function load_required_files() {
-		require_once plugin_dir_path( __DIR__ ) . 'includes/class-cpt-handler.php';
-		new CPT_Handler();
+		$base_path = plugin_dir_path( __DIR__ ) . 'includes/';
+		$files     = array(
+			'cpt-handler'   => 'CPT_Handler',
+			'table-handler' => null,
+			'rest-router'   => 'REST_Router',
+		);
+		foreach ( $files as $file => $class ) {
+			require_once $base_path . "class-{$file}.php";
+			if ( ! is_null( $class ) ) {
+				new ( __NAMESPACE__ . '\\' . $class )();
+			}
+		}
 	}
 
-	/**
-	 * Create the necessary database tables on plugin activation.
-	 *
-	 * @global \wpdb $wpdb WordPress database abstraction object.
-	 */
-	public function create_tables() {
-		global $wpdb;
 
-		$charset_collate = $wpdb->get_charset_collate();
-
-		// Recipes table
-		$recipes_table = $wpdb->prefix . 'meal_plannr_recipes';
-		$recipes_sql   = "CREATE TABLE $recipes_table (
-        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        post_id bigint(20) unsigned NOT NULL,
-        macros_protein decimal(8,2) DEFAULT 0,
-        macros_carbs decimal(8,2) DEFAULT 0,
-        macros_fat decimal(8,2) DEFAULT 0,
-        last_used datetime DEFAULT NULL,
-        times_used int(11) DEFAULT 0,
-        created_at datetime DEFAULT CURRENT_TIMESTAMP,
-        updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY post_id (post_id),
-        KEY last_used (last_used)
-    ) $charset_collate;";
-
-		// Recipe ingredients table
-		$ingredients_table = $wpdb->prefix . 'meal_plannr_recipe_ingredients';
-		$ingredients_sql   = "CREATE TABLE $ingredients_table (
-        id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-        recipe_id bigint(20) unsigned NOT NULL,
-        name varchar(255) NOT NULL,
-        quantity_volume decimal(8,2) DEFAULT NULL,
-        unit_volume varchar(50) DEFAULT NULL,
-        quantity_weight decimal(8,2) DEFAULT NULL,
-        unit_weight varchar(50) DEFAULT NULL,
-        notes text DEFAULT NULL,
-        sort_order int(11) DEFAULT 0,
-        created_at datetime DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY recipe_id (recipe_id)
-    ) $charset_collate;";
-
-		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-		dbDelta( $recipes_sql );
-		dbDelta( $ingredients_sql );
-	}
 
 
 	/**
