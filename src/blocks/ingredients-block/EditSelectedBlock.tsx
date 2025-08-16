@@ -32,13 +32,14 @@ export default function EditSelectedBlock( { attributes, setAttributes } ) {
 
 			<div style={ { display: 'flex', gap: '8px' } }>
 				<TextControl
+					type="number"
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ 'Qty (Volume)' }
 					value={ quantityVolume }
 					onChange={ ( value ) =>
 						setAttributes( {
-							quantityVolume: parseFloat( value ) || 0,
+							quantityVolume: value,
 						} )
 					}
 				/>
@@ -53,6 +54,7 @@ export default function EditSelectedBlock( { attributes, setAttributes } ) {
 						{ label: 'tbsp', value: 'tbsp' },
 						{ label: 'tsp', value: 'tsp' },
 						{ label: 'ml', value: 'ml' },
+						{ label: 'fl. oz.', value: 'fl. oz.' },
 					] }
 					onChange={ ( value ) =>
 						setAttributes( { unitVolume: value } )
@@ -64,11 +66,12 @@ export default function EditSelectedBlock( { attributes, setAttributes } ) {
 				<TextControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
+					type="number"
 					label={ 'Qty (Weight)' }
 					value={ quantityWeight }
 					onChange={ ( value ) =>
 						setAttributes( {
-							quantityWeight: parseFloat( value ) || 0,
+							quantityWeight: value,
 						} )
 					}
 				/>

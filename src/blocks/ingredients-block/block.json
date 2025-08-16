@@ -19,7 +19,7 @@
 			"default": ""
 		},
 		"quantityVolume": {
-			"type": "string",
+			"type": "number",
 			"default": 0
 		},
 		"unitVolume": {
@@ -27,7 +27,7 @@
 			"default": ""
 		},
 		"quantityWeight": {
-			"type": "string",
+			"type": "number",
 			"default": 0
 		},
 		"unitWeight": {

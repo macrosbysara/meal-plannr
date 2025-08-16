@@ -20,11 +20,27 @@ class Table_Handler {
 	public string $table_prefix;
 
 	/**
+	 * Ingredients table name
+	 *
+	 * @var string $ingredients_table
+	 */
+	public string $ingredients_table;
+
+	/**
+	 * Recipes table name
+	 *
+	 * @var string $recipes_table
+	 */
+	public string $recipes_table;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
 		global $wpdb;
-		$this->table_prefix = $wpdb->prefix . 'meal_plannr_';
+		$this->table_prefix      = $wpdb->prefix . 'meal_plannr_';
+		$this->ingredients_table = $this->table_prefix . 'recipe_ingredients';
+		$this->recipes_table     = $this->table_prefix . 'recipes';
 	}
 
 	/**
@@ -51,8 +67,7 @@ class Table_Handler {
 	 * @return string SQL statement to create the recipe table.
 	 */
 	private function create_recipe_table( string $charset_collate ): string {
-		$recipes_table = $this->table_prefix . 'recipes';
-		$recipes_sql   = "CREATE TABLE $recipes_table (
+		$recipes_sql = "CREATE TABLE $this->recipes_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			post_id bigint(20) unsigned NOT NULL,
 			macros_protein decimal(8,2) DEFAULT 0,
@@ -76,8 +91,7 @@ class Table_Handler {
 	 * @return string SQL statement to create the ingredients table.
 	 */
 	private function create_ingredients_table( string $charset_collate ): string {
-		$ingredients_table = $this->table_prefix . 'recipe_ingredients';
-		$ingredients_sql   = "CREATE TABLE $ingredients_table (
+		$ingredients_sql = "CREATE TABLE $this->ingredients_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			recipe_id bigint(20) unsigned NOT NULL,
 			name varchar(255) NOT NULL,
@@ -92,5 +106,26 @@ class Table_Handler {
 			KEY recipe_id (recipe_id)
     	) $charset_collate;";
 		return $ingredients_sql;
+	}
+
+	/**
+	 * Delete ingredients by recipe ID
+	 *
+	 * @param int $recipe_id The recipe ID.
+	 */
+	public function delete_ingredients( int $recipe_id ): void {
+		global $wpdb;
+		$wpdb->delete( $this->ingredients_table, array( 'recipe_id' => $recipe_id ) );
+	}
+
+	/**
+	 * Insert a new ingredient
+	 *
+	 * @param array $data The ingredient data.
+	 * @return int|false The number of rows inserted or false on failure.
+	 */
+	public function insert_ingredient( array $data ): int|false {
+		global $wpdb;
+		return $wpdb->insert( $this->ingredients_table, $data );
 	}
 }

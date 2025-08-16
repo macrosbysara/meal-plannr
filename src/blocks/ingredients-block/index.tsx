@@ -1,5 +1,5 @@
 import { registerBlockType } from '@wordpress/blocks';
-import { useBlockProps, useInnerBlocksProps } from '@wordpress/block-editor';
+import { useBlockProps } from '@wordpress/block-editor';
 import metadata from './block.json';
 import Edit from './edit';
 
@@ -22,20 +22,27 @@ registerBlockType( metadata.name, {
 				alignItems: 'center',
 			},
 		} );
+		const hasWeight = 0 !== quantityWeight;
+		const hasVolume = 0 !== quantityVolume;
 		return (
 			<li { ...blockProps }>
 				<span className="ingredient-name">{ name }</span>
 				<span className="ingredient-notes">{ notes }</span>
-				{ quantityVolume && (
+				{ hasVolume && (
 					<span>
 						{ quantityVolume } { unitVolume }
 					</span>
 				) }
-				{ quantityWeight && (
-					<span>
-						{ quantityWeight } { unitWeight }
-					</span>
-				) }
+				{ hasWeight &&
+					( hasVolume ? (
+						<span>
+							({ quantityWeight } { unitWeight })
+						</span>
+					) : (
+						<span>
+							{ quantityWeight } { unitWeight }
+						</span>
+					) ) }
 			</li>
 		);
 	},

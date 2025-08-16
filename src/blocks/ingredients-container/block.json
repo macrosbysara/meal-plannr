@@ -14,6 +14,6 @@
 		"multiple": true
 	},
 	"attributes": {},
-	"parent": [ "meal-plannr/recipe-block" ],
+	"ancestor": [ "meal-plannr/recipe-block" ],
 	"editorScript": "file:./index.tsx"
 }

@@ -30,11 +30,19 @@ class REST_Router {
 	private int $version;
 
 	/**
+	 * MealPlannr DB Handler
+	 *
+	 * @var Table_Handler $mp_db
+	 */
+	private Table_Handler $mp_db;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
 		$this->namespace = 'mealplannr';
 		$this->version   = 1;
+		$this->mp_db     = new Table_Handler();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
@@ -53,8 +61,9 @@ class REST_Router {
 				},
 				'args'                => array(
 					'recipe_id'   => array(
-						'required' => true,
-						'type'     => 'integer',
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
 					),
 					'ingredients' => array(
 						'required' => true,
@@ -72,34 +81,51 @@ class REST_Router {
 	 * @return array
 	 */
 	public function batch_update_ingredients( WP_REST_Request $request ): WP_REST_Response {
-		global $wpdb;
-		$table       = "{$wpdb->prefix}mp_ingredients";
-		$recipe_id   = intval( $request['recipe_id'] );
+		$recipe_id   = $request['recipe_id'];
 		$ingredients = $request['ingredients'];
-
-		// Wipe old ingredients for the recipe
-		$wpdb->delete( $table, array( 'recipe_id' => $recipe_id ) );
-
-		// Insert fresh ones
-		foreach ( $ingredients as $ingredient ) {
-			$wpdb->insert(
-				$table,
+		$this->mp_db->delete_ingredients( $recipe_id );
+		if ( empty( $ingredients ) ) {
+			return new WP_REST_Response(
 				array(
-					'recipe_id'       => $recipe_id,
-					'name'            => sanitize_text_field( $ingredient['name'] ),
-					'quantity_volume' => floatval( $ingredient['quantityVolume'] ?? 0 ),
-					'unit_volume'     => sanitize_text_field( $ingredient['unitVolume'] ?? '' ),
-					'quantity_weight' => floatval( $ingredient['quantityWeight'] ?? 0 ),
-					'unit_weight'     => sanitize_text_field( $ingredient['unitWeight'] ?? '' ),
-				)
+					'success' => true,
+					'message' => 'All ingredients removed.',
+				),
+				201
+			);
+		}
+		$ingredient_rows = array();
+		foreach ( $ingredients as $ingredient ) {
+			$data              = array(
+				'recipe_id'       => $recipe_id,
+				'name'            => sanitize_text_field( $ingredient['name'] ),
+				'quantity_volume' => floatval( $ingredient['quantityVolume'] ?? null ),
+				'unit_volume'     => sanitize_text_field( $ingredient['unitVolume'] ?? null ),
+				'quantity_weight' => floatval( $ingredient['quantityWeight'] ?? null ),
+				'unit_weight'     => sanitize_text_field( $ingredient['unitWeight'] ?? null ),
+				'notes'     => sanitize_textarea_field( $ingredient['notes'] ?? null ),
+			);
+			$ingredient_rows[] = $this->mp_db->insert_ingredient( $data );
+		}
+
+		// Check for any errors during insertion
+		if ( in_array( false, $ingredient_rows, true ) || count( $ingredient_rows ) !== count( $ingredients ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => 'One or more ingredients could not be inserted.',
+				),
+				500
 			);
 		}
 
-		return rest_ensure_response(
+		return new WP_REST_Response(
 			array(
 				'success' => true,
+				'message' => 'Added ' . count( $ingredients ) . ' ingredients to recipe ' . $recipe_id,
 				'count'   => count( $ingredients ),
-			)
+				'data'    => $ingredients,
+			),
+			201
 		);
 	}
 }
