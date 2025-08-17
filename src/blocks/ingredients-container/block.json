@@ -1,18 +1,19 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
-	"name": "meal-plannr/recipe-block",
+	"name": "meal-plannr/ingredients-container-block",
 	"version": "1.0.0",
-	"title": "Recipe Block",
+	"title": "Ingredients List",
 	"category": "widgets",
 	"icon": "food",
-	"keywords": [ "recipe", "meal", "food" ],
-	"description": "A block that renders recipes",
+	"keywords": [ "ingredients" ],
+	"description": "A block that renders a list of ingredients",
 	"supports": {
 		"html": false,
 		"reusable": false,
-		"multiple": false
+		"multiple": true
 	},
 	"attributes": {},
+	"ancestor": [ "meal-plannr/recipe-block" ],
 	"editorScript": "file:./index.tsx"
 }

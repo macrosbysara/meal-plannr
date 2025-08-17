@@ -1,0 +1,25 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "meal-plannr/recipe-meta-block",
+	"version": "1.0.0",
+	"title": "Recipe Meta",
+	"category": "widgets",
+	"icon": "block-default",
+	"keywords": [ "meta", "macros" ],
+	"description": "A block that renders recipe meta information",
+	"supports": {
+		"html": false,
+		"reusable": false,
+		"multiple": false,
+		"inserter": false
+	},
+	"attributes": {
+		"protein": { "type": "number", "default": 0 },
+		"carbs": { "type": "number", "default": 0 },
+		"fat": { "type": "number", "default": 0 },
+		"calories": { "type": "number", "default": 0 }
+	},
+	"parent": [ "meal-plannr/recipe-block" ],
+	"editorScript": "file:./index.tsx"
+}
