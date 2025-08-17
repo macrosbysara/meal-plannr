@@ -28,7 +28,7 @@ class Theme_Init {
 	 * Initialize the theme.
 	 */
 	public function init() {
-		$db_handler = new Table_Handler();
+		new Table_Handler();
 	}
 
 	/**
@@ -48,9 +48,6 @@ class Theme_Init {
 			}
 		}
 	}
-
-
-
 
 	/**
 	 * Register the block assets.

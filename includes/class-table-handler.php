@@ -41,6 +41,7 @@ class Table_Handler {
 		$this->table_prefix      = $wpdb->prefix . 'meal_plannr_';
 		$this->ingredients_table = $this->table_prefix . 'recipe_ingredients';
 		$this->recipes_table     = $this->table_prefix . 'recipes';
+		$this->create_tables();
 	}
 
 	/**
@@ -70,16 +71,14 @@ class Table_Handler {
 		$recipes_sql = "CREATE TABLE $this->recipes_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			post_id bigint(20) unsigned NOT NULL,
-			macros_protein decimal(8,2) DEFAULT 0,
-			macros_carbs decimal(8,2) DEFAULT 0,
-			macros_fat decimal(8,2) DEFAULT 0,
-			last_used datetime DEFAULT NULL,
-			times_used int(11) DEFAULT 0,
+			protein decimal(8,2) DEFAULT 0,
+			carbs decimal(8,2) DEFAULT 0,
+			fat decimal(8,2) DEFAULT 0,
+			calories decimal(8,2) DEFAULT 0,
 			created_at datetime DEFAULT CURRENT_TIMESTAMP,
 			updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY  (id),
-			KEY post_id (post_id),
-			KEY last_used (last_used)
+			KEY post_id (post_id)
 		) $charset_collate;";
 		return $recipes_sql;
 	}
@@ -127,5 +126,67 @@ class Table_Handler {
 	public function insert_ingredient( array $data ): int|false {
 		global $wpdb;
 		return $wpdb->insert( $this->ingredients_table, $data );
+	}
+
+	/**
+	 * Update the macro nutrient values for a recipe.
+	 *
+	 * @param int   $recipe_id The recipe ID.
+	 * @param array $data The macro nutrient data.
+	 * @return bool True on success, false on failure.
+	 */
+	public function update_macros( int $recipe_id, array $data ): bool {
+		global $wpdb;
+
+		// Check if row exists for this post_id
+		$exists = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT id FROM {$this->recipes_table} WHERE post_id = %d",
+				$recipe_id
+			)
+		);
+
+		if ( $exists ) {
+			$updated = $wpdb->update(
+				$this->recipes_table,
+				$data,
+				array( 'post_id' => $recipe_id ),
+				array( '%f', '%f', '%f', '%f' ),
+				array( '%d' )
+			);
+			return (bool) $updated;
+		} else {
+			// Add post_id to data for insert
+			$data['post_id'] = $recipe_id;
+			$inserted        = $wpdb->insert(
+				$this->recipes_table,
+				$data,
+				array( '%d', '%f', '%f', '%f', '%f' )
+			);
+			return (bool) $inserted;
+		}
+	}
+
+	/**
+	 * Delete Macros
+	 *
+	 * @param int $recipe_id the recipe to delete macros from
+	 */
+	public function clear_macros( int $recipe_id ): bool {
+		global $wpdb;
+
+		$updated = $wpdb->update(
+			$this->recipes_table,
+			array(
+				'protein'  => null,
+				'carbs'    => null,
+				'fat'      => null,
+				'calories' => null,
+			),
+			array( 'post_id' => $recipe_id ),
+			array( '%f', '%f', '%f', '%f' ),
+			array( '%d' )
+		);
+		return false !== $updated;
 	}
 }
