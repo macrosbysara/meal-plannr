@@ -1,31 +1,15 @@
-import { useSelect } from '@wordpress/data';
 import { useEffect } from '@wordpress/element';
-import { store as blockEditorStore } from '@wordpress/block-editor';
-import { store as editorStore } from '@wordpress/editor';
 import apiFetch from '@wordpress/api-fetch';
+
+import useEditorState from './_useEditorState';
 
 /**
  * Hook to batch sync ingredients to custom table on post save.
  */
 export function useIngredientSync() {
 	const ingredientBlockName = 'meal-plannr/recipe-ingredients-block';
-	const { recipeId, isSavingPost, isAutosavingPost } = useSelect(
-		( select ) => {
-			const editor = select( editorStore );
-			return {
-				recipeId: editor.getCurrentPostId(),
-				isSavingPost: editor.isSavingPost(),
-				isAutosavingPost: editor.isAutosavingPost(),
-			};
-		},
-		[]
-	);
-	const { blocks } = useSelect( ( select ) => {
-		const editor = select( blockEditorStore );
-		return {
-			blocks: editor.getBlocks(),
-		};
-	}, [] );
+	const { recipeId, isSavingPost, isAutosavingPost, blocks } =
+		useEditorState();
 
 	useEffect( () => {
 		if ( isSavingPost && ! isAutosavingPost ) {

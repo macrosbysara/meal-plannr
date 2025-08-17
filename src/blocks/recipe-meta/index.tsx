@@ -1,5 +1,5 @@
 import { registerBlockType } from '@wordpress/blocks';
-import { useBlockProps, useInnerBlocksProps } from '@wordpress/block-editor';
+import { useBlockProps } from '@wordpress/block-editor';
 import { receipt } from '@wordpress/icons';
 import metadata from './block.json';
 import Edit from './edit';
@@ -12,9 +12,9 @@ registerBlockType( metadata.name, {
 		return (
 			<div { ...useBlockProps.save() }>
 				<ul>
-					<li>Protein: { protein }g</li>
 					<li>Carbs: { carbs }g</li>
 					<li>Fat: { fat }g</li>
+					<li>Protein: { protein }g</li>
 					<li>Calories: { calories }</li>
 				</ul>
 			</div>

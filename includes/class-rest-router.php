@@ -7,6 +7,7 @@
 
 namespace MealPlannr;
 
+use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
 use WP_REST_Server;
@@ -50,8 +51,9 @@ class REST_Router {
 	 * Register routes
 	 */
 	public function register_routes() {
+		$namespace = "{$this->namespace}/v{$this->version}";
 		register_rest_route(
-			"{$this->namespace}/v{$this->version}",
+			$namespace,
 			'/ingredients/batch',
 			array(
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -69,6 +71,57 @@ class REST_Router {
 						'required' => true,
 						'type'     => 'array',
 					),
+				),
+			)
+		);
+
+		// Macros routes
+		register_rest_route(
+			$namespace,
+			'/recipes/(?P<id>\d+)/macros',
+			array(
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'update_macros' ),
+					'permission_callback' => fn() => current_user_can( 'edit_posts' ),
+					'args'                => array(
+						'id'   => array(
+							'required'          => true,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+						'data' => array(
+							'required'   => true,
+							'type'       => 'object',
+							'properties' => array(
+								'protein'  => array(
+									'type'              => 'number',
+									'required'          => true,
+									'sanitize_callback' => 'floatval',
+								),
+								'carbs'    => array(
+									'type'              => 'number',
+									'required'          => true,
+									'sanitize_callback' => 'floatval',
+								),
+								'fat'      => array(
+									'type'              => 'number',
+									'required'          => true,
+									'sanitize_callback' => 'floatval',
+								),
+								'calories' => array(
+									'type'              => 'number',
+									'required'          => true,
+									'sanitize_callback' => 'floatval',
+								),
+							),
+						),
+					),
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( $this, 'delete_macros' ),
+					'permission_callback' => fn() => current_user_can( 'edit_posts' ),
 				),
 			)
 		);
@@ -102,7 +155,7 @@ class REST_Router {
 				'unit_volume'     => sanitize_text_field( $ingredient['unitVolume'] ?? null ),
 				'quantity_weight' => floatval( $ingredient['quantityWeight'] ?? null ),
 				'unit_weight'     => sanitize_text_field( $ingredient['unitWeight'] ?? null ),
-				'notes'     => sanitize_textarea_field( $ingredient['notes'] ?? null ),
+				'notes'           => sanitize_textarea_field( $ingredient['notes'] ?? null ),
 			);
 			$ingredient_rows[] = $this->mp_db->insert_ingredient( $data );
 		}
@@ -127,5 +180,29 @@ class REST_Router {
 			),
 			201
 		);
+	}
+
+	/**
+	 * Update recipe macros
+	 *
+	 * @param WP_REST_Request $request the request
+	 * @return array|WP_Error
+	 */
+	public function update_macros( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$recipe_id = (int) $request['id'];
+		$data      = $request['data'];
+
+		$success = $this->mp_db->update_macros( $recipe_id, $data );
+
+		return $success
+			? new WP_REST_Response(
+				array(
+					'success' => true,
+					'data'    => $data,
+					'message' => 'Macros updated successfully.',
+				),
+				201
+			)
+			: new WP_Error( 'db_error', 'Failed to update macros.', array( 'status' => 500 ) );
 	}
 }
