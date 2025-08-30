@@ -73,15 +73,14 @@ class Table_Handler {
 	 */
 	public function __construct() {
 		global $wpdb;
-		$this->table_prefix      = $wpdb->prefix . 'meal_plannr_';
-		$this->ingredients_table = $this->table_prefix . 'recipe_ingredients';
-		$this->recipes_table     = $this->table_prefix . 'recipes';
-		// Note: Following issue requirements for wp_ prefix on new tables
-		$this->households_table         = $wpdb->prefix . 'households';
-		$this->household_members_table  = $wpdb->prefix . 'household_members';
-		$this->networks_table           = $wpdb->prefix . 'networks';
-		$this->network_households_table = $wpdb->prefix . 'network_households';
-		$this->recipe_shares_table      = $wpdb->prefix . 'recipe_shares';
+		$this->table_prefix             = $wpdb->prefix . 'meal_plannr_';
+		$this->ingredients_table        = $this->table_prefix . 'recipe_ingredients';
+		$this->recipes_table            = $this->table_prefix . 'recipes';
+		$this->households_table         = $this->table_prefix . 'households';
+		$this->household_members_table  = $this->table_prefix . 'household_members';
+		$this->networks_table           = $this->table_prefix . 'networks';
+		$this->network_households_table = $this->table_prefix . 'network_households';
+		$this->recipe_shares_table      = $this->table_prefix . 'recipe_shares';
 		$this->create_tables();
 	}
 
@@ -124,7 +123,7 @@ class Table_Handler {
 	 * @param string $charset_collate The character set and collation for the table.
 	 * @return string SQL statement to create the recipe table.
 	 */
-	protected function create_recipe_table( string $charset_collate ): string {
+	private function create_recipe_table( string $charset_collate ): string {
 		$recipes_sql = "CREATE TABLE $this->recipes_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			post_id bigint(20) unsigned NOT NULL,
@@ -146,7 +145,7 @@ class Table_Handler {
 	 * @param string $charset_collate The character set and collation for the table.
 	 * @return string SQL statement to create the ingredients table.
 	 */
-	protected function create_ingredients_table( string $charset_collate ): string {
+	private function create_ingredients_table( string $charset_collate ): string {
 		$ingredients_sql = "CREATE TABLE $this->ingredients_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			recipe_id bigint(20) unsigned NOT NULL,
@@ -170,7 +169,7 @@ class Table_Handler {
 	 * @param string $charset_collate The character set and collation for the table.
 	 * @return string SQL statement to create the households table.
 	 */
-	protected function create_households_table( string $charset_collate ): string {
+	private function create_households_table( string $charset_collate ): string {
 		$households_sql = "CREATE TABLE $this->households_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			name varchar(255) NOT NULL,
@@ -190,7 +189,7 @@ class Table_Handler {
 	 * @param string $charset_collate The character set and collation for the table.
 	 * @return string SQL statement to create the household members table.
 	 */
-	protected function create_household_members_table( string $charset_collate ): string {
+	private function create_household_members_table( string $charset_collate ): string {
 		$household_members_sql = "CREATE TABLE $this->household_members_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			household_id bigint(20) unsigned NOT NULL,
@@ -212,7 +211,7 @@ class Table_Handler {
 	 * @param string $charset_collate The character set and collation for the table.
 	 * @return string SQL statement to create the networks table.
 	 */
-	protected function create_networks_table( string $charset_collate ): string {
+	private function create_networks_table( string $charset_collate ): string {
 		$networks_sql = "CREATE TABLE $this->networks_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			name varchar(255) NOT NULL,
@@ -231,7 +230,7 @@ class Table_Handler {
 	 * @param string $charset_collate The character set and collation for the table.
 	 * @return string SQL statement to create the network households table.
 	 */
-	protected function create_network_households_table( string $charset_collate ): string {
+	private function create_network_households_table( string $charset_collate ): string {
 		$network_households_sql = "CREATE TABLE $this->network_households_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			network_id bigint(20) unsigned NOT NULL,
@@ -252,7 +251,7 @@ class Table_Handler {
 	 * @param string $charset_collate The character set and collation for the table.
 	 * @return string SQL statement to create the recipe shares table.
 	 */
-	protected function create_recipe_shares_table( string $charset_collate ): string {
+	private function create_recipe_shares_table( string $charset_collate ): string {
 		$recipe_shares_sql = "CREATE TABLE $this->recipe_shares_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			recipe_id bigint(20) unsigned NOT NULL,
