@@ -45,13 +45,21 @@ class REST_Router {
 	private Network_Service $network_service;
 
 	/**
+	 * Recipe Access Service
+	 *
+	 * @var Recipe_Access_Service $recipe_access_service
+	 */
+	private Recipe_Access_Service $recipe_access_service;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->namespace       = 'mealplannr';
-		$this->version         = 1;
-		$this->mp_db           = new Table_Handler();
-		$this->network_service = new Network_Service();
+		$this->namespace             = 'mealplannr';
+		$this->version               = 1;
+		$this->mp_db                 = new Table_Handler();
+		$this->network_service       = new Network_Service();
+		$this->recipe_access_service = new Recipe_Access_Service();
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 	}
 
@@ -270,6 +278,77 @@ class REST_Router {
 						'type'     => 'string',
 						'enum'     => array( 'pending', 'accepted', 'rejected' ),
 						'default'  => 'pending',
+					),
+				),
+			)
+		);
+
+		// Recipe sharing routes
+		// Set recipe sharing
+		register_rest_route(
+			$namespace,
+			'/recipes/(?P<recipe_id>\d+)/sharing',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( $this, 'set_recipe_sharing' ),
+				'permission_callback' => fn() => is_user_logged_in(),
+				'args'                => array(
+					'recipe_id'    => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+					'visibility'   => array(
+						'required' => true,
+						'type'     => 'string',
+						'enum'     => array( 'private', 'household', 'network', 'public' ),
+					),
+					'household_id' => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+					'network_id'   => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		// Get recipe sharing status
+		register_rest_route(
+			$namespace,
+			'/recipes/(?P<recipe_id>\d+)/sharing',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_recipe_sharing' ),
+				'permission_callback' => fn() => is_user_logged_in(),
+				'args'                => array(
+					'recipe_id' => array(
+						'required'          => true,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
+		// Get accessible recipes
+		register_rest_route(
+			$namespace,
+			'/recipes/accessible',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'get_accessible_recipes' ),
+				'permission_callback' => fn() => is_user_logged_in(),
+				'args'                => array(
+					'limit' => array(
+						'required'          => false,
+						'type'              => 'integer',
+						'sanitize_callback' => 'absint',
+						'default'           => 20,
 					),
 				),
 			)
@@ -514,6 +593,85 @@ class REST_Router {
 			array(
 				'success'     => true,
 				'invitations' => $invitations,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Set recipe sharing settings
+	 *
+	 * @param WP_REST_Request $request The request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function set_recipe_sharing( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+		$recipe_id    = $request['recipe_id'];
+		$visibility   = $request['visibility'];
+		$household_id = $request->get_param( 'household_id' );
+		$network_id   = $request->get_param( 'network_id' );
+		$user_id      = get_current_user_id();
+
+		$success = $this->recipe_access_service->set_recipe_sharing( 
+			$recipe_id, 
+			$visibility, 
+			$user_id, 
+			$household_id, 
+			$network_id 
+		);
+
+		if ( $success ) {
+			return new WP_REST_Response(
+				array(
+					'success' => true,
+					'message' => 'Recipe sharing settings updated',
+				),
+				200
+			);
+		} else {
+			return new WP_Error( 'sharing_error', 'Failed to update recipe sharing settings', array( 'status' => 400 ) );
+		}
+	}
+
+	/**
+	 * Get recipe sharing settings
+	 *
+	 * @param WP_REST_Request $request The request
+	 * @return WP_REST_Response
+	 */
+	public function get_recipe_sharing( WP_REST_Request $request ): WP_REST_Response {
+		$recipe_id = $request['recipe_id'];
+		$sharing   = $this->recipe_access_service->get_recipe_sharing_status( $recipe_id );
+
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'sharing' => $sharing,
+			),
+			200
+		);
+	}
+
+	/**
+	 * Get accessible recipes for user
+	 *
+	 * @param WP_REST_Request $request The request
+	 * @return WP_REST_Response
+	 */
+	public function get_accessible_recipes( WP_REST_Request $request ): WP_REST_Response {
+		$user_id = get_current_user_id();
+		$limit   = $request->get_param( 'limit' );
+		
+		$args = array();
+		if ( $limit ) {
+			$args['limit'] = $limit;
+		}
+
+		$recipes = $this->recipe_access_service->get_accessible_recipes( $user_id, $args );
+
+		return new WP_REST_Response(
+			array(
+				'success' => true,
+				'recipes' => $recipes,
 			),
 			200
 		);
