@@ -59,6 +59,15 @@ class Admin_Handler {
 				'publish_recipes' => true,
 			)
 		);
+
+		// Also add these capabilities to administrators
+		$admin_role = get_role( 'administrator' );
+		if ( $admin_role ) {
+			$admin_role->add_cap( 'edit_recipes' );
+			$admin_role->add_cap( 'publish_recipes' );
+			$admin_role->add_cap( 'delete_recipes' );
+			$admin_role->add_cap( 'manage_household' );
+		}
 	}
 
 	/**
@@ -629,6 +638,27 @@ class Admin_Handler {
 		);
 		
 		return (bool) $result;
+	}
+	
+	/**
+	 * Validate network size limit.
+	 *
+	 * @param int $network_id Network ID.
+	 * @return bool True if network can accept more households.
+	 */
+	private function validate_network_size_limit( $network_id ) {
+		global $wpdb;
+		
+		$table_handler = new Table_Handler();
+		
+		$household_count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$table_handler->network_households_table} WHERE network_id = %d",
+				$network_id
+			)
+		);
+		
+		return $household_count < 10; // Max 10 households per network
 	}
 	
 	/**
