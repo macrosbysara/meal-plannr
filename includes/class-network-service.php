@@ -25,7 +25,7 @@ class Network_Service
     /**
      * Maximum households per network
      */
-    const MAX_HOUSEHOLDS_PER_NETWORK = 10;
+    public const MAX_HOUSEHOLDS_PER_NETWORK = 10;
 
     /**
      * Constructor
@@ -316,7 +316,8 @@ class Network_Service
         $mp_db = new Table_Handler();
         $household_id = $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT household_id FROM {$mp_db->household_members_table} WHERE user_id = %d AND role = 'owner' LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT household_id FROM {$mp_db->household_members_table} WHERE user_id = %d AND role = 'owner' LIMIT 1",
                 $user_id
             )
         );
@@ -335,7 +336,8 @@ class Network_Service
         $mp_db = new Table_Handler();
         $user_id = $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT user_id FROM {$mp_db->household_members_table} WHERE household_id = %d AND role = 'owner' LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT user_id FROM {$mp_db->household_members_table} WHERE household_id = %d AND role = 'owner' LIMIT 1",
                 $household_id
             )
         );

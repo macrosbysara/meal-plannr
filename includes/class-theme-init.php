@@ -79,7 +79,10 @@ class Theme_Init
             return;
         }
         if (function_exists('wp_register_block_types_from_metadata_collection')) {
-            wp_register_block_types_from_metadata_collection($blocks_path . '/blocks', $blocks_path . '/blocks-manifest.php');
+            wp_register_block_types_from_metadata_collection(
+                $blocks_path . '/blocks',
+                $blocks_path . '/blocks-manifest.php'
+            );
             return;
         }
 

@@ -584,7 +584,8 @@ class REST_Router
         global $wpdb;
         $household_id = $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT household_id FROM {$this->mp_db->household_members_table} WHERE user_id = %d AND role = 'owner' LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT household_id FROM {$this->mp_db->household_members_table} WHERE user_id = %d AND role = 'owner' LIMIT 1",
                 $user_id
             )
         );

@@ -316,7 +316,8 @@ class Table_Handler
         // Check if row exists for this post_id
         $exists = $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT id FROM `{$wpdb->prefix}meal_plannr_recipes` WHERE post_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT id FROM `{$wpdb->prefix}meal_plannr_recipes` WHERE post_id = %d",
                 $recipe_id
             )
         );
@@ -398,7 +399,8 @@ class Table_Handler
         global $wpdb;
         return $wpdb->get_row(
             $wpdb->prepare(
-                "SELECT * FROM {$this->networks_table} WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT * FROM {$this->networks_table} WHERE id = %d",
                 $network_id
             )
         );
@@ -415,7 +417,8 @@ class Table_Handler
         global $wpdb;
         return $wpdb->get_results(
             $wpdb->prepare(
-                "SELECT * FROM {$this->networks_table} WHERE created_by = %d ORDER BY created_at DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT * FROM {$this->networks_table} WHERE created_by = %d ORDER BY created_at DESC",
                 $user_id
             )
         );
@@ -569,7 +572,8 @@ class Table_Handler
         global $wpdb;
         return (int) $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND status = 'accepted'", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND status = 'accepted'",
                 $network_id
             )
         );
@@ -587,7 +591,8 @@ class Table_Handler
         global $wpdb;
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND household_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND household_id = %d",
                 $network_id,
                 $household_id
             )

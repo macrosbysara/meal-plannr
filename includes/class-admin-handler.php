@@ -429,7 +429,9 @@ class Admin_Handler
                     wp_redirect(add_query_arg('message', 'household_created', admin_url('users.php?page=my-networks')));
                     exit;
                 } else {
-                    wp_redirect(add_query_arg('error', 'household_creation_failed', admin_url('users.php?page=my-networks')));
+                    wp_redirect(
+                        add_query_arg('error', 'household_creation_failed', admin_url('users.php?page=my-networks'))
+                    );
                     exit;
                 }
                 break;
@@ -444,7 +446,9 @@ class Admin_Handler
                     wp_redirect(add_query_arg('message', 'network_created', admin_url('users.php?page=my-networks')));
                     exit;
                 } else {
-                    wp_redirect(add_query_arg('error', 'network_creation_failed', admin_url('users.php?page=my-networks')));
+                    wp_redirect(
+                        add_query_arg('error', 'network_creation_failed', admin_url('users.php?page=my-networks'))
+                    );
                     exit;
                 }
                 break;

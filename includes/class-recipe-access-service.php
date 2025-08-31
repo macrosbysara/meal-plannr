@@ -78,7 +78,8 @@ class Recipe_Access_Service
         global $wpdb;
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$this->mp_db->household_members_table} WHERE household_id = %d AND user_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT COUNT(*) FROM {$this->mp_db->household_members_table} WHERE household_id = %d AND user_id = %d",
                 $household_id,
                 $user_id
             )
@@ -105,8 +106,8 @@ class Recipe_Access_Service
         global $wpdb;
         $count = $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT COUNT(*) FROM {$this->mp_db->network_households_table} 
-				 WHERE network_id = %d AND household_id = %d AND status = 'accepted'", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT COUNT(*) FROM {$this->mp_db->network_households_table} WHERE network_id = %d AND household_id = %d AND status = 'accepted'",
                 $network_id,
                 $user_household_id
             )
@@ -125,7 +126,8 @@ class Recipe_Access_Service
         global $wpdb;
         $household_id = $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT household_id FROM {$this->mp_db->household_members_table} WHERE user_id = %d LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT household_id FROM {$this->mp_db->household_members_table} WHERE user_id = %d LIMIT 1",
                 $user_id
             )
         );
@@ -143,7 +145,8 @@ class Recipe_Access_Service
         global $wpdb;
         return $wpdb->get_row(
             $wpdb->prepare(
-                "SELECT * FROM {$this->mp_db->recipe_shares_table} WHERE recipe_id = %d LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                "SELECT * FROM {$this->mp_db->recipe_shares_table} WHERE recipe_id = %d LIMIT 1",
                 $recipe_id
             )
         );
@@ -278,7 +281,10 @@ class Recipe_Access_Service
     public function filter_recipe_query(string $where, object $query): string
     {
         // Only apply to recipe queries for logged-in users
-        if (! is_user_logged_in() || ! isset($query->query_vars['post_type']) || $query->query_vars['post_type'] !== 'recipe') {
+        if (! is_user_logged_in() 
+            || ! isset($query->query_vars['post_type']) 
+            || $query->query_vars['post_type'] !== 'recipe'
+        ) {
             return $where;
         }
 
