@@ -236,7 +236,9 @@ class Table_Handler {
 			network_id bigint(20) unsigned NOT NULL,
 			household_id bigint(20) unsigned NOT NULL,
 			role enum('owner','member') NOT NULL DEFAULT 'member',
-			joined_at datetime DEFAULT CURRENT_TIMESTAMP,
+			status enum('pending','accepted','rejected') NOT NULL DEFAULT 'pending',
+			invited_at datetime DEFAULT CURRENT_TIMESTAMP,
+			joined_at datetime DEFAULT NULL,
 			PRIMARY KEY  (id),
 			UNIQUE KEY unique_network_household (network_id, household_id),
 			KEY network_id (network_id),
@@ -348,5 +350,243 @@ class Table_Handler {
 			array( '%d' )
 		);
 		return false !== $updated;
+	}
+
+	/**
+	 * Create a new network
+	 *
+	 * @param string $name Network name
+	 * @param int    $created_by User ID creating the network
+	 * @return int|false Network ID on success, false on failure
+	 */
+	public function create_network( string $name, int $created_by ): int|false {
+		global $wpdb;
+		$result = $wpdb->insert(
+			$this->networks_table,
+			array(
+				'name'       => $name,
+				'created_by' => $created_by,
+			),
+			array( '%s', '%d' )
+		);
+		return $result ? $wpdb->insert_id : false;
+	}
+
+	/**
+	 * Get network by ID
+	 *
+	 * @param int $network_id Network ID
+	 * @return object|null Network data or null if not found
+	 */
+	public function get_network( int $network_id ): ?object {
+		global $wpdb;
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM {$this->networks_table} WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$network_id
+			)
+		);
+	}
+
+	/**
+	 * Get networks by user ID (networks they created)
+	 *
+	 * @param int $user_id User ID
+	 * @return array List of networks
+	 */
+	public function get_user_networks( int $user_id ): array {
+		global $wpdb;
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$this->networks_table} WHERE created_by = %d ORDER BY created_at DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$user_id
+			)
+		);
+	}
+
+	/**
+	 * Send household invitation to network
+	 *
+	 * @param int $network_id Network ID
+	 * @param int $household_id Household ID to invite
+	 * @return int|false Invitation ID on success, false on failure
+	 */
+	public function invite_household_to_network( int $network_id, int $household_id ): int|false {
+		global $wpdb;
+		$result = $wpdb->insert(
+			$this->network_households_table,
+			array(
+				'network_id'   => $network_id,
+				'household_id' => $household_id,
+				'status'       => 'pending',
+				'role'         => 'member',
+			),
+			array( '%d', '%d', '%s', '%s' )
+		);
+		return $result ? $wpdb->insert_id : false;
+	}
+
+	/**
+	 * Accept network invitation
+	 *
+	 * @param int $invitation_id Invitation ID
+	 * @return bool Success
+	 */
+	public function accept_network_invitation( int $invitation_id ): bool {
+		global $wpdb;
+		$result = $wpdb->update(
+			$this->network_households_table,
+			array(
+				'status'    => 'accepted',
+				'joined_at' => current_time( 'mysql' ),
+			),
+			array( 'id' => $invitation_id ),
+			array( '%s', '%s' ),
+			array( '%d' )
+		);
+		return false !== $result;
+	}
+
+	/**
+	 * Reject network invitation
+	 *
+	 * @param int $invitation_id Invitation ID
+	 * @return bool Success
+	 */
+	public function reject_network_invitation( int $invitation_id ): bool {
+		global $wpdb;
+		$result = $wpdb->update(
+			$this->network_households_table,
+			array( 'status' => 'rejected' ),
+			array( 'id' => $invitation_id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+		return false !== $result;
+	}
+
+	/**
+	 * Remove household from network
+	 *
+	 * @param int $network_id Network ID
+	 * @param int $household_id Household ID to remove
+	 * @return bool Success
+	 */
+	public function remove_household_from_network( int $network_id, int $household_id ): bool {
+		global $wpdb;
+		$result = $wpdb->delete(
+			$this->network_households_table,
+			array(
+				'network_id'   => $network_id,
+				'household_id' => $household_id,
+			),
+			array( '%d', '%d' )
+		);
+		return false !== $result;
+	}
+
+	/**
+	 * Get network households with status
+	 *
+	 * @param int    $network_id Network ID
+	 * @param string $status Optional status filter
+	 * @return array List of households in network
+	 */
+	public function get_network_households( int $network_id, string $status = '' ): array {
+		global $wpdb;
+		$sql = "SELECT nh.*, h.name as household_name, h.created_by as household_owner 
+				FROM {$this->network_households_table} nh 
+				JOIN {$this->households_table} h ON nh.household_id = h.id 
+				WHERE nh.network_id = %d";
+		$params = array( $network_id );
+		
+		if ( ! empty( $status ) ) {
+			$sql .= ' AND nh.status = %s';
+			$params[] = $status;
+		}
+		
+		$sql .= ' ORDER BY nh.invited_at DESC';
+		
+		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
+	/**
+	 * Get household invitations
+	 *
+	 * @param int    $household_id Household ID
+	 * @param string $status Optional status filter
+	 * @return array List of invitations for household
+	 */
+	public function get_household_invitations( int $household_id, string $status = 'pending' ): array {
+		global $wpdb;
+		$sql = "SELECT nh.*, n.name as network_name, n.created_by as network_owner 
+				FROM {$this->network_households_table} nh 
+				JOIN {$this->networks_table} n ON nh.network_id = n.id 
+				WHERE nh.household_id = %d";
+		$params = array( $household_id );
+		
+		if ( ! empty( $status ) ) {
+			$sql .= ' AND nh.status = %s';
+			$params[] = $status;
+		}
+		
+		$sql .= ' ORDER BY nh.invited_at DESC';
+		
+		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
+
+	/**
+	 * Get network size (accepted households only)
+	 *
+	 * @param int $network_id Network ID
+	 * @return int Number of accepted households in network
+	 */
+	public function get_network_size( int $network_id ): int {
+		global $wpdb;
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND status = 'accepted'", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$network_id
+			)
+		);
+	}
+
+	/**
+	 * Check if household is already in network
+	 *
+	 * @param int $network_id Network ID
+	 * @param int $household_id Household ID
+	 * @return bool True if household is already in network (any status)
+	 */
+	public function is_household_in_network( int $network_id, int $household_id ): bool {
+		global $wpdb;
+		$count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND household_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$network_id,
+				$household_id
+			)
+		);
+		return (int) $count > 0;
+	}
+
+	/**
+	 * Get invitation by ID
+	 *
+	 * @param int $invitation_id Invitation ID
+	 * @return object|null Invitation data or null if not found
+	 */
+	public function get_invitation( int $invitation_id ): ?object {
+		global $wpdb;
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT nh.*, n.name as network_name, h.name as household_name 
+				 FROM {$this->network_households_table} nh 
+				 JOIN {$this->networks_table} n ON nh.network_id = n.id 
+				 JOIN {$this->households_table} h ON nh.household_id = h.id 
+				 WHERE nh.id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$invitation_id
+			)
+		);
 	}
 }
