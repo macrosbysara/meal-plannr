@@ -18,7 +18,6 @@ class Theme_Init {
 	 */
 	public function __construct() {
 		$this->load_required_files();
-		register_activation_hook( __FILE__, array( $this, 'init' ) );
 		add_action( 'after_setup_theme', array( $this, 'block_theme_support' ), 50 );
 		add_action( 'init', array( $this, 'register_block_assets' ) );
 		add_action( 'block_categories_all', array( $this, 'register_block_pattern_categories' ) );
@@ -28,7 +27,17 @@ class Theme_Init {
 	 * Initialize the theme.
 	 */
 	public function init() {
-		new Table_Handler();
+		$table_handler = new Table_Handler();
+		$admin_handler = new Admin_Handler();
+		$admin_handler->register_roles();
+	}
+
+	/**
+	 * Cleanup on plugin deactivation.
+	 */
+	public function cleanup() {
+		$admin_handler = new Admin_Handler();
+		$admin_handler->remove_roles();
 	}
 
 	/**
@@ -43,6 +52,7 @@ class Theme_Init {
 			'recipe-access-service' => null,
 			'invitation-handler'    => 'Invitation_Handler',
 			'rest-router'           => 'REST_Router',
+			'admin-handler' => 'Admin_Handler',
 		);
 		foreach ( $files as $file => $class ) {
 			require_once $base_path . "class-{$file}.php";
