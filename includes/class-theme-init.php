@@ -37,9 +37,12 @@ class Theme_Init {
 	private function load_required_files() {
 		$base_path = plugin_dir_path( __DIR__ ) . 'includes/';
 		$files     = array(
-			'cpt-handler'   => 'CPT_Handler',
-			'table-handler' => null,
-			'rest-router'   => 'REST_Router',
+			'cpt-handler'           => 'CPT_Handler',
+			'table-handler'         => null,
+			'network-service'       => null,
+			'recipe-access-service' => null,
+			'invitation-handler'    => 'Invitation_Handler',
+			'rest-router'           => 'REST_Router',
 		);
 		foreach ( $files as $file => $class ) {
 			require_once $base_path . "class-{$file}.php";
