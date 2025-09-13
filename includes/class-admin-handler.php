@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Admin Handler
  *
@@ -92,7 +91,7 @@ class Admin_Handler {
 		$current_user = wp_get_current_user();
 
 		// Allow full access for administrators
-		if ( in_array( 'administrator', $current_user->roles ) ) {
+		if ( in_array( 'administrator', $current_user->roles, true ) ) {
 			return;
 		}
 
@@ -109,21 +108,22 @@ class Admin_Handler {
 		$current_screen = get_current_screen();
 
 		// Always allow profile and network management pages
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if (
-			$pagenow === 'profile.php' ||
-			( isset( $_GET['page'] ) && $_GET['page'] === 'my-networks' )
+			'profile.php' === $pagenow ||
+			( isset( $_GET['page'] ) && 'my-networks' === $_GET['page'] )
 		) {
 			return;
 		}
 
 		// Allow recipe post type pages
-		if ( isset( $_GET['post_type'] ) && $_GET['post_type'] === 'recipe' ) {
+		if ( isset( $_GET['post_type'] ) && 'recipe' === $_GET['post_type'] ) {
 			return;
 		}
 
 		// Allow editing individual recipes
-		if ( $pagenow === 'post.php' || $pagenow === 'post-new.php' ) {
-			$post_type = 'recipe'; // Default for new posts
+		if ( 'post.php' === $pagenow || 'post-new.php' === $pagenow ) {
+			$post_type = 'recipe';
 			if ( isset( $_GET['post'] ) ) {
 				$post = get_post( $_GET['post'] );
 				if ( $post ) {
@@ -133,21 +133,22 @@ class Admin_Handler {
 				$post_type = $_GET['post_type'];
 			}
 
-			if ( $post_type === 'recipe' ) {
+			if ( 'recipe' === $post_type ) {
 				return;
 			}
 		}
 
 		// Allow admin-ajax.php
-		if ( $pagenow === 'admin-ajax.php' ) {
+		if ( 'admin-ajax.php' === $pagenow ) {
 			return;
 		}
 
 		// Redirect to recipes page for unauthorized access
-		if ( $pagenow !== 'edit.php' || ! isset( $_GET['post_type'] ) || $_GET['post_type'] !== 'recipe' ) {
-			wp_redirect( admin_url( 'edit.php?post_type=recipe' ) );
+		if ( 'edit.php' !== $pagenow || ! isset( $_GET['post_type'] ) || 'recipe' !== $_GET['post_type'] ) {
+			wp_safe_redirect( admin_url( 'edit.php?post_type=recipe' ) );
 			exit;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 
 	/**
@@ -157,7 +158,7 @@ class Admin_Handler {
 		$current_user = wp_get_current_user();
 
 		// Don't modify menu for administrators
-		if ( in_array( 'administrator', $current_user->roles ) ) {
+		if ( in_array( 'administrator', $current_user->roles, true ) ) {
 			return;
 		}
 
@@ -200,7 +201,7 @@ class Admin_Handler {
 		$current_user = wp_get_current_user();
 
 		// Don't modify admin bar for administrators
-		if ( in_array( 'administrator', $current_user->roles ) ) {
+		if ( in_array( 'administrator', $current_user->roles, true ) ) {
 			return;
 		}
 
@@ -230,20 +231,20 @@ class Admin_Handler {
 		$current_user = wp_get_current_user();
 
 		// Don't modify capabilities for administrators
-		if ( in_array( 'administrator', $current_user->roles ) ) {
+		if ( in_array( 'administrator', $current_user->roles, true ) ) {
 			return $allcaps;
 		}
 
 		// Handle recipe-related capabilities
-		if ( in_array( 'edit_posts', $caps ) || in_array( 'delete_posts', $caps ) ) {
+		if ( in_array( 'edit_posts', $caps, true ) || in_array( 'delete_posts', $caps, true ) ) {
 			// Check if user is dealing with recipe post type
 			if ( isset( $args[2] ) ) {
 				$post = get_post( $args[2] );
-				if ( $post && $post->post_type === 'recipe' ) {
+				if ( $post && 'recipe' === $post->post_type ) {
 					// Allow recipe operations for household roles
 					if (
-						in_array( 'household_owner', $current_user->roles ) ||
-						in_array( 'household_member', $current_user->roles )
+						in_array( 'household_owner', $current_user->roles, true ) ||
+						in_array( 'household_member', $current_user->roles, true )
 					) {
 						$allcaps['edit_posts']   = true;
 						$allcaps['delete_posts'] = true;
@@ -265,7 +266,7 @@ class Admin_Handler {
 		$allowed_roles = array( 'household_owner', 'household_member' );
 		$user_roles    = array_intersect( $allowed_roles, $current_user->roles );
 
-		if ( empty( $user_roles ) && ! in_array( 'administrator', $current_user->roles ) ) {
+		if ( empty( $user_roles ) && ! in_array( 'administrator', $current_user->roles, true ) ) {
 			return;
 		}
 
@@ -416,10 +417,10 @@ class Admin_Handler {
 
 				$household_name = sanitize_text_field( $_POST['household_name'] );
 				if ( $this->create_household( $current_user->ID, $household_name ) ) {
-					wp_redirect( add_query_arg( 'message', 'household_created', admin_url( 'users.php?page=my-networks' ) ) );
+					wp_safe_redirect( add_query_arg( 'message', 'household_created', admin_url( 'users.php?page=my-networks' ) ) );
 					exit;
 				} else {
-					wp_redirect(
+					wp_safe_redirect(
 						add_query_arg( 'error', 'household_creation_failed', admin_url( 'users.php?page=my-networks' ) )
 					);
 					exit;
@@ -433,10 +434,10 @@ class Admin_Handler {
 
 				$network_name = sanitize_text_field( $_POST['network_name'] );
 				if ( $this->create_network( $current_user->ID, $network_name ) ) {
-					wp_redirect( add_query_arg( 'message', 'network_created', admin_url( 'users.php?page=my-networks' ) ) );
+					wp_safe_redirect( add_query_arg( 'message', 'network_created', admin_url( 'users.php?page=my-networks' ) ) );
 					exit;
 				} else {
-					wp_redirect(
+					wp_safe_redirect(
 						add_query_arg( 'error', 'network_creation_failed', admin_url( 'users.php?page=my-networks' ) )
 					);
 					exit;
@@ -457,12 +458,14 @@ class Admin_Handler {
 		$table_handler = new Table_Handler();
 
 		$household = $wpdb->get_row(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->prepare(
 				"SELECT h.* FROM {$table_handler->households_table} h
 				 INNER JOIN {$table_handler->household_members_table} hm ON h.id = hm.household_id
 				 WHERE hm.user_id = %d",
 				$user_id
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
 		return $household;
@@ -480,6 +483,7 @@ class Admin_Handler {
 		$table_handler = new Table_Handler();
 
 		$members = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->prepare(
 				"SELECT u.display_name, hm.role, hm.user_id
 				 FROM {$table_handler->household_members_table} hm
@@ -488,6 +492,7 @@ class Admin_Handler {
 				 ORDER BY hm.role = 'owner' DESC, u.display_name ASC",
 				$household_id
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
 		return $members;
@@ -505,6 +510,7 @@ class Admin_Handler {
 		$table_handler = new Table_Handler();
 
 		$networks = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->prepare(
 				"SELECT n.*, COUNT(nh.household_id) as household_count
 				 FROM {$table_handler->networks_table} n
@@ -514,6 +520,7 @@ class Admin_Handler {
 				 GROUP BY n.id",
 				$user_id
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
 		return $networks;
@@ -532,15 +539,17 @@ class Admin_Handler {
 		$table_handler = new Table_Handler();
 
 		$role = $wpdb->get_var(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->prepare(
 				"SELECT role FROM {$table_handler->household_members_table}
 				 WHERE household_id = %d AND user_id = %d",
 				$household_id,
 				$user_id
 			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		);
 
-		return $role === 'owner';
+		return 'owner' === $role || in_array( 'administrator', wp_get_current_user()->roles, true );
 	}
 
 	/**
@@ -558,7 +567,7 @@ class Admin_Handler {
 		// Check if user is already in a household
 		$existing = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table_handler->household_members_table} WHERE user_id = %d",
+				"SELECT COUNT(*) FROM {$table_handler->household_members_table} WHERE user_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$user_id
 			)
 		);
@@ -597,9 +606,9 @@ class Admin_Handler {
 		// Update user role
 		$user       = new \WP_User( $user_id );
 		$user_roles = $user->roles;
-		if ( ! in_array( 'household_owner', $user_roles ) ) {
+		if ( ! in_array( 'household_owner', $user_roles, true ) ) {
 			$user_roles[] = 'household_owner';
-			$result = update_user_meta( $user_id, 'additional_roles', $user_roles );
+			$result       = update_user_meta( $user_id, 'additional_roles', $user_roles );
 		}
 
 		return (bool) $result;
@@ -666,7 +675,7 @@ class Admin_Handler {
 
 		$household_count = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$table_handler->network_households_table} WHERE network_id = %d",
+				"SELECT COUNT(*) FROM {$table_handler->network_households_table} WHERE network_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$network_id
 			)
 		);

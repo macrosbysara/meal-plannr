@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Plugin Name: Meal Plannr
  * Description: A plugin to help you plan your meals.

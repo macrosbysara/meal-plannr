@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Network Service
  *
@@ -170,7 +169,7 @@ class Network_Service {
 		}
 
 		// Check if invitation is pending
-		if ( $invitation->status !== 'pending' ) {
+		if ( 'pending' !== $invitation->status ) {
 			return array(
 				'success' => false,
 				'error'   => 'Invitation has already been ' . $invitation->status,
@@ -226,7 +225,7 @@ class Network_Service {
 		}
 
 		// Check if invitation is pending
-		if ( $invitation->status !== 'pending' ) {
+		if ( 'pending' !== $invitation->status ) {
 			return array(
 				'success' => false,
 				'error'   => 'Invitation has already been ' . $invitation->status,

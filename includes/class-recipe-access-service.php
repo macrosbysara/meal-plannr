@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Recipe Access Service
  *
@@ -170,20 +169,20 @@ class Recipe_Access_Service {
 		}
 
 		// Validate required parameters
-		if ( $visibility === 'household' && ! $household_id ) {
+		if ( 'household' === $visibility && ! $household_id ) {
 			return false;
 		}
-		if ( $visibility === 'network' && ! $network_id ) {
+		if ( 'network' === $visibility && ! $network_id ) {
 			return false;
 		}
 
 		// For household visibility, ensure user is in the household
-		if ( $visibility === 'household' && ! $this->can_user_access_household_recipe( $household_id, $user_id ) ) {
+		if ( 'household' === $visibility && ! $this->can_user_access_household_recipe( $household_id, $user_id ) ) {
 			return false;
 		}
 
 		// For network visibility, ensure user's household is in the network
-		if ( $visibility === 'network' && ! $this->can_user_access_network_recipe( $network_id, $user_id ) ) {
+		if ( 'network' === $visibility && ! $this->can_user_access_network_recipe( $network_id, $user_id ) ) {
 			return false;
 		}
 
@@ -246,12 +245,13 @@ class Recipe_Access_Service {
 					rs.id IS NULL
 				)
 				ORDER BY p.post_date DESC";
-
+		// phpcs:disable Universal.Operators.DisallowShortTernary.Found
 		$params = array(
 			$user_household_id ?: 0,
 			$user_id,
 			$user_household_id ?: 0,
 		);
+		// phpcs:enable Universal.Operators.DisallowShortTernary.Found
 
 		if ( isset( $args['limit'] ) ) {
 			$sql     .= ' LIMIT %d';
@@ -274,7 +274,7 @@ class Recipe_Access_Service {
 		// Only apply to recipe queries for logged-in users
 		if ( ! is_user_logged_in()
 			|| ! isset( $query->query_vars['post_type'] )
-			|| $query->query_vars['post_type'] !== 'recipe'
+			|| 'recipe' !== $query->query_vars['post_type']
 		) {
 			return $where;
 		}
@@ -283,7 +283,7 @@ class Recipe_Access_Service {
 		$user_household_id = $this->get_user_household( $user_id );
 
 		global $wpdb;
-
+		// phpcs:disable Universal.Operators.DisallowShortTernary.Found
 		$access_clause = "
 			AND (
 				{$wpdb->posts}.post_author = {$user_id}
@@ -306,6 +306,7 @@ class Recipe_Access_Service {
 					WHERE rs2.recipe_id = {$wpdb->posts}.ID
 				)
 			)";
+			// phpcs:enable Universal.Operators.DisallowShortTernary.Found
 
 		return $where . $access_clause;
 	}

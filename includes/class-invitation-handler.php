@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Invitation Handler
  *
@@ -63,13 +62,13 @@ class Invitation_Handler {
 				),
 				home_url()
 			);
-			wp_redirect( wp_login_url( $return_url ) );
+			wp_safe_redirect( wp_login_url( $return_url ) );
 			exit;
 		}
 
 		$user_id = get_current_user_id();
 
-		if ( $action === 'accept_network_invitation' ) {
+		if ( 'accept_network_invitation' === $action ) {
 			$result = $this->network_service->accept_invitation( $invitation_id, $user_id );
 		} else {
 			$result = $this->network_service->reject_invitation( $invitation_id, $user_id );

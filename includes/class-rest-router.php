@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Class: Rest Router
  *
@@ -458,10 +457,9 @@ class REST_Router {
 	/**
 	 * Get user networks
 	 *
-	 * @param WP_REST_Request $request The request
 	 * @return WP_REST_Response
 	 */
-	public function get_user_networks( WP_REST_Request $request ): WP_REST_Response {
+	public function get_user_networks(): WP_REST_Response {
 		$user_id  = get_current_user_id();
 		$networks = $this->mp_db->get_user_networks( $user_id );
 
@@ -505,7 +503,7 @@ class REST_Router {
 		$action        = $request['action'];
 		$user_id       = get_current_user_id();
 
-		if ( $action === 'accept' ) {
+		if ( 'accept' === $action ) {
 			$result = $this->network_service->accept_invitation( $invitation_id, $user_id );
 		} else {
 			$result = $this->network_service->reject_invitation( $invitation_id, $user_id );
