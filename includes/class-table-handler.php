@@ -11,124 +11,121 @@ namespace MealPlannr;
 /**
  * Table Handler
  */
-class Table_Handler
-{
-    /**
-     * Table prefix for custom db tables
-     *
-     * @var string $table_prefix
-     */
-    public string $table_prefix;
+class Table_Handler {
 
-    /**
-     * Ingredients table name
-     *
-     * @var string $ingredients_table
-     */
-    public string $ingredients_table;
+	/**
+	 * Table prefix for custom db tables
+	 *
+	 * @var string $table_prefix
+	 */
+	public string $table_prefix;
 
-    /**
-     * Recipes table name
-     *
-     * @var string $recipes_table
-     */
-    public string $recipes_table;
+	/**
+	 * Ingredients table name
+	 *
+	 * @var string $ingredients_table
+	 */
+	public string $ingredients_table;
 
-    /**
-     * Households table name
-     *
-     * @var string $households_table
-     */
-    public string $households_table;
+	/**
+	 * Recipes table name
+	 *
+	 * @var string $recipes_table
+	 */
+	public string $recipes_table;
 
-    /**
-     * Household members table name
-     *
-     * @var string $household_members_table
-     */
-    public string $household_members_table;
+	/**
+	 * Households table name
+	 *
+	 * @var string $households_table
+	 */
+	public string $households_table;
 
-    /**
-     * Networks table name
-     *
-     * @var string $networks_table
-     */
-    public string $networks_table;
+	/**
+	 * Household members table name
+	 *
+	 * @var string $household_members_table
+	 */
+	public string $household_members_table;
 
-    /**
-     * Network households table name
-     *
-     * @var string $network_households_table
-     */
-    public string $network_households_table;
+	/**
+	 * Networks table name
+	 *
+	 * @var string $networks_table
+	 */
+	public string $networks_table;
 
-    /**
-     * Recipe shares table name
-     *
-     * @var string $recipe_shares_table
-     */
-    public string $recipe_shares_table;
+	/**
+	 * Network households table name
+	 *
+	 * @var string $network_households_table
+	 */
+	public string $network_households_table;
 
-    /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        global $wpdb;
-        $this->table_prefix             = $wpdb->prefix . 'meal_plannr_';
-        $this->ingredients_table        = $this->table_prefix . 'recipe_ingredients';
-        $this->recipes_table            = $this->table_prefix . 'recipes';
-        $this->households_table         = $this->table_prefix . 'households';
-        $this->household_members_table  = $this->table_prefix . 'household_members';
-        $this->networks_table           = $this->table_prefix . 'networks';
-        $this->network_households_table = $this->table_prefix . 'network_households';
-        $this->recipe_shares_table      = $this->table_prefix . 'recipe_shares';
-        $this->create_tables();
-    }
+	/**
+	 * Recipe shares table name
+	 *
+	 * @var string $recipe_shares_table
+	 */
+	public string $recipe_shares_table;
 
-    /**
-     * Create the necessary database tables on plugin activation.
-     *
-     * @global \wpdb $wpdb WordPress database abstraction object.
-     */
-    public function create_tables()
-    {
-        global $wpdb;
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		global $wpdb;
+		$this->table_prefix             = $wpdb->prefix . 'meal_plannr_';
+		$this->ingredients_table        = $this->table_prefix . 'recipe_ingredients';
+		$this->recipes_table            = $this->table_prefix . 'recipes';
+		$this->households_table         = $this->table_prefix . 'households';
+		$this->household_members_table  = $this->table_prefix . 'household_members';
+		$this->networks_table           = $this->table_prefix . 'networks';
+		$this->network_households_table = $this->table_prefix . 'network_households';
+		$this->recipe_shares_table      = $this->table_prefix . 'recipe_shares';
+		$this->create_tables();
+	}
 
-        $charset_collate = $wpdb->get_charset_collate();
+	/**
+	 * Create the necessary database tables on plugin activation.
+	 *
+	 * @global \wpdb $wpdb WordPress database abstraction object.
+	 */
+	public function create_tables() {
+		global $wpdb;
 
-        // Existing tables
-        $recipes_sql     = $this->create_recipe_table($charset_collate);
-        $ingredients_sql = $this->create_ingredients_table($charset_collate);
+		$charset_collate = $wpdb->get_charset_collate();
 
-        // New custom tables for households, networks and sharing
-        $households_sql         = $this->create_households_table($charset_collate);
-        $household_members_sql  = $this->create_household_members_table($charset_collate);
-        $networks_sql           = $this->create_networks_table($charset_collate);
-        $network_households_sql = $this->create_network_households_table($charset_collate);
-        $recipe_shares_sql      = $this->create_recipe_shares_table($charset_collate);
+		// Existing tables
+		$recipes_sql     = $this->create_recipe_table( $charset_collate );
+		$ingredients_sql = $this->create_ingredients_table( $charset_collate );
 
-        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		// New custom tables for households, networks and sharing
+		$households_sql         = $this->create_households_table( $charset_collate );
+		$household_members_sql  = $this->create_household_members_table( $charset_collate );
+		$networks_sql           = $this->create_networks_table( $charset_collate );
+		$network_households_sql = $this->create_network_households_table( $charset_collate );
+		$recipe_shares_sql      = $this->create_recipe_shares_table( $charset_collate );
 
-        // Create all tables
-        dbDelta($recipes_sql);
-        dbDelta($ingredients_sql);
-        dbDelta($households_sql);
-        dbDelta($household_members_sql);
-        dbDelta($networks_sql);
-        dbDelta($network_households_sql);
-        dbDelta($recipe_shares_sql);
-    }
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
-    /**
-     * Create recipe table
-     *
-     * @param string $charset_collate The character set and collation for the table.
-     * @return string SQL statement to create the recipe table.
-     */
-    private function create_recipe_table(string $charset_collate): string
-    {
-        $recipes_sql = "CREATE TABLE $this->recipes_table (
+		// Create all tables
+		dbDelta( $recipes_sql );
+		dbDelta( $ingredients_sql );
+		dbDelta( $households_sql );
+		dbDelta( $household_members_sql );
+		dbDelta( $networks_sql );
+		dbDelta( $network_households_sql );
+		dbDelta( $recipe_shares_sql );
+	}
+
+	/**
+	 * Create recipe table
+	 *
+	 * @param string $charset_collate The character set and collation for the table.
+	 * @return string SQL statement to create the recipe table.
+	 */
+	private function create_recipe_table( string $charset_collate ): string {
+		$recipes_sql = "CREATE TABLE $this->recipes_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			post_id bigint(20) unsigned NOT NULL,
 			protein decimal(8,2) DEFAULT 0,
@@ -140,18 +137,17 @@ class Table_Handler
 			PRIMARY KEY  (id),
 			KEY post_id (post_id)
 		) $charset_collate;";
-        return $recipes_sql;
-    }
+		return $recipes_sql;
+	}
 
-    /**
-     * Create ingredients table
-     *
-     * @param string $charset_collate The character set and collation for the table.
-     * @return string SQL statement to create the ingredients table.
-     */
-    private function create_ingredients_table(string $charset_collate): string
-    {
-        $ingredients_sql = "CREATE TABLE $this->ingredients_table (
+	/**
+	 * Create ingredients table
+	 *
+	 * @param string $charset_collate The character set and collation for the table.
+	 * @return string SQL statement to create the ingredients table.
+	 */
+	private function create_ingredients_table( string $charset_collate ): string {
+		$ingredients_sql = "CREATE TABLE $this->ingredients_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			recipe_id bigint(20) unsigned NOT NULL,
 			name varchar(255) NOT NULL,
@@ -165,18 +161,17 @@ class Table_Handler
 			PRIMARY KEY  (id),
 			KEY recipe_id (recipe_id)
     	) $charset_collate;";
-        return $ingredients_sql;
-    }
+		return $ingredients_sql;
+	}
 
-    /**
-     * Create households table
-     *
-     * @param string $charset_collate The character set and collation for the table.
-     * @return string SQL statement to create the households table.
-     */
-    private function create_households_table(string $charset_collate): string
-    {
-        $households_sql = "CREATE TABLE $this->households_table (
+	/**
+	 * Create households table
+	 *
+	 * @param string $charset_collate The character set and collation for the table.
+	 * @return string SQL statement to create the households table.
+	 */
+	private function create_households_table( string $charset_collate ): string {
+		$households_sql = "CREATE TABLE $this->households_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			name varchar(255) NOT NULL,
 			created_by bigint(20) unsigned NOT NULL,
@@ -186,18 +181,17 @@ class Table_Handler
 			PRIMARY KEY  (id),
 			KEY created_by (created_by)
 		) $charset_collate;";
-        return $households_sql;
-    }
+		return $households_sql;
+	}
 
-    /**
-     * Create household members table
-     *
-     * @param string $charset_collate The character set and collation for the table.
-     * @return string SQL statement to create the household members table.
-     */
-    private function create_household_members_table(string $charset_collate): string
-    {
-        $household_members_sql = "CREATE TABLE $this->household_members_table (
+	/**
+	 * Create household members table
+	 *
+	 * @param string $charset_collate The character set and collation for the table.
+	 * @return string SQL statement to create the household members table.
+	 */
+	private function create_household_members_table( string $charset_collate ): string {
+		$household_members_sql = "CREATE TABLE $this->household_members_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			household_id bigint(20) unsigned NOT NULL,
 			user_id bigint(20) unsigned NOT NULL,
@@ -209,18 +203,17 @@ class Table_Handler
 			KEY household_id (household_id),
 			KEY user_id (user_id)
 		) $charset_collate;";
-        return $household_members_sql;
-    }
+		return $household_members_sql;
+	}
 
-    /**
-     * Create networks table
-     *
-     * @param string $charset_collate The character set and collation for the table.
-     * @return string SQL statement to create the networks table.
-     */
-    private function create_networks_table(string $charset_collate): string
-    {
-        $networks_sql = "CREATE TABLE $this->networks_table (
+	/**
+	 * Create networks table
+	 *
+	 * @param string $charset_collate The character set and collation for the table.
+	 * @return string SQL statement to create the networks table.
+	 */
+	private function create_networks_table( string $charset_collate ): string {
+		$networks_sql = "CREATE TABLE $this->networks_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			name varchar(255) NOT NULL,
 			created_by bigint(20) unsigned NOT NULL,
@@ -229,18 +222,17 @@ class Table_Handler
 			PRIMARY KEY  (id),
 			KEY created_by (created_by)
 		) $charset_collate;";
-        return $networks_sql;
-    }
+		return $networks_sql;
+	}
 
-    /**
-     * Create network households table
-     *
-     * @param string $charset_collate The character set and collation for the table.
-     * @return string SQL statement to create the network households table.
-     */
-    private function create_network_households_table(string $charset_collate): string
-    {
-        $network_households_sql = "CREATE TABLE $this->network_households_table (
+	/**
+	 * Create network households table
+	 *
+	 * @param string $charset_collate The character set and collation for the table.
+	 * @return string SQL statement to create the network households table.
+	 */
+	private function create_network_households_table( string $charset_collate ): string {
+		$network_households_sql = "CREATE TABLE $this->network_households_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			network_id bigint(20) unsigned NOT NULL,
 			household_id bigint(20) unsigned NOT NULL,
@@ -253,18 +245,17 @@ class Table_Handler
 			KEY network_id (network_id),
 			KEY household_id (household_id)
 		) $charset_collate;";
-        return $network_households_sql;
-    }
+		return $network_households_sql;
+	}
 
-    /**
-     * Create recipe shares table
-     *
-     * @param string $charset_collate The character set and collation for the table.
-     * @return string SQL statement to create the recipe shares table.
-     */
-    private function create_recipe_shares_table(string $charset_collate): string
-    {
-        $recipe_shares_sql = "CREATE TABLE $this->recipe_shares_table (
+	/**
+	 * Create recipe shares table
+	 *
+	 * @param string $charset_collate The character set and collation for the table.
+	 * @return string SQL statement to create the recipe shares table.
+	 */
+	private function create_recipe_shares_table( string $charset_collate ): string {
+		$recipe_shares_sql = "CREATE TABLE $this->recipe_shares_table (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			recipe_id bigint(20) unsigned NOT NULL,
 			visibility enum('private','household','network','public') NOT NULL DEFAULT 'private',
@@ -276,348 +267,332 @@ class Table_Handler
 			KEY household_id (household_id),
 			KEY network_id (network_id)
 		) $charset_collate;";
-        return $recipe_shares_sql;
-    }
+		return $recipe_shares_sql;
+	}
 
-    /**
-     * Delete ingredients by recipe ID
-     *
-     * @param int $recipe_id The recipe ID.
-     */
-    public function delete_ingredients(int $recipe_id): void
-    {
-        global $wpdb;
-        $wpdb->delete($this->ingredients_table, array( 'recipe_id' => $recipe_id ));
-    }
+	/**
+	 * Delete ingredients by recipe ID
+	 *
+	 * @param int $recipe_id The recipe ID.
+	 */
+	public function delete_ingredients( int $recipe_id ): void {
+		global $wpdb;
+		$wpdb->delete( $this->ingredients_table, array( 'recipe_id' => $recipe_id ) );
+	}
 
-    /**
-     * Insert a new ingredient
-     *
-     * @param array $data The ingredient data.
-     * @return int|false The number of rows inserted or false on failure.
-     */
-    public function insert_ingredient(array $data): int|false
-    {
-        global $wpdb;
-        return $wpdb->insert($this->ingredients_table, $data);
-    }
+	/**
+	 * Insert a new ingredient
+	 *
+	 * @param array $data The ingredient data.
+	 * @return int|false The number of rows inserted or false on failure.
+	 */
+	public function insert_ingredient( array $data ): int|false {
+		global $wpdb;
+		return $wpdb->insert( $this->ingredients_table, $data );
+	}
 
-    /**
-     * Update the macro nutrient values for a recipe.
-     *
-     * @param int   $recipe_id The recipe ID.
-     * @param array $data The macro nutrient data.
-     * @return bool True on success, false on failure.
-     */
-    public function update_macros(int $recipe_id, array $data): bool
-    {
-        global $wpdb;
+	/**
+	 * Update the macro nutrient values for a recipe.
+	 *
+	 * @param int   $recipe_id The recipe ID.
+	 * @param array $data The macro nutrient data.
+	 * @return bool True on success, false on failure.
+	 */
+	public function update_macros( int $recipe_id, array $data ): bool {
+		global $wpdb;
 
-        // Check if row exists for this post_id
-        $exists = $wpdb->get_var(
-            $wpdb->prepare(
+		// Check if row exists for this post_id
+		$exists = $wpdb->get_var(
+			$wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT id FROM `{$wpdb->prefix}meal_plannr_recipes` WHERE post_id = %d",
-                $recipe_id
-            )
-        );
+				"SELECT id FROM `{$wpdb->prefix}meal_plannr_recipes` WHERE post_id = %d",
+				$recipe_id
+			)
+		);
 
-        if ($exists) {
-            $updated = $wpdb->update(
-                $this->recipes_table,
-                $data,
-                array( 'post_id' => $recipe_id ),
-                array( '%f', '%f', '%f', '%f' ),
-                array( '%d' )
-            );
-            return (bool) $updated;
-        } else {
-            // Add post_id to data for insert
-            $data['post_id'] = $recipe_id;
-            $inserted        = $wpdb->insert(
-                $this->recipes_table,
-                $data,
-                array( '%d', '%f', '%f', '%f', '%f' )
-            );
-            return (bool) $inserted;
-        }
-    }
+		if ( $exists ) {
+			$updated = $wpdb->update(
+				$this->recipes_table,
+				$data,
+				array( 'post_id' => $recipe_id ),
+				array( '%f', '%f', '%f', '%f' ),
+				array( '%d' )
+			);
+			return (bool) $updated;
+		} else {
+			// Add post_id to data for insert
+			$data['post_id'] = $recipe_id;
+			$inserted        = $wpdb->insert(
+				$this->recipes_table,
+				$data,
+				array( '%d', '%f', '%f', '%f', '%f' )
+			);
+			return (bool) $inserted;
+		}
+	}
 
-    /**
-     * Delete Macros
-     *
-     * @param int $recipe_id the recipe to delete macros from
-     */
-    public function clear_macros(int $recipe_id): bool
-    {
-        global $wpdb;
+	/**
+	 * Delete Macros
+	 *
+	 * @param int $recipe_id the recipe to delete macros from
+	 */
+	public function clear_macros( int $recipe_id ): bool {
+		global $wpdb;
 
-        $updated = $wpdb->update(
-            $this->recipes_table,
-            array(
-                'protein'  => null,
-                'carbs'    => null,
-                'fat'      => null,
-                'calories' => null,
-            ),
-            array( 'post_id' => $recipe_id ),
-            array( '%f', '%f', '%f', '%f' ),
-            array( '%d' )
-        );
-        return false !== $updated;
-    }
+		$updated = $wpdb->update(
+			$this->recipes_table,
+			array(
+				'protein'  => null,
+				'carbs'    => null,
+				'fat'      => null,
+				'calories' => null,
+			),
+			array( 'post_id' => $recipe_id ),
+			array( '%f', '%f', '%f', '%f' ),
+			array( '%d' )
+		);
+		return false !== $updated;
+	}
 
-    /**
-     * Create a new network
-     *
-     * @param string $name Network name
-     * @param int    $created_by User ID creating the network
-     * @return int|false Network ID on success, false on failure
-     */
-    public function create_network(string $name, int $created_by): int|false
-    {
-        global $wpdb;
-        $result = $wpdb->insert(
-            $this->networks_table,
-            array(
-                'name'       => $name,
-                'created_by' => $created_by,
-            ),
-            array( '%s', '%d' )
-        );
-        return $result ? $wpdb->insert_id : false;
-    }
+	/**
+	 * Create a new network
+	 *
+	 * @param string $name Network name
+	 * @param int    $created_by User ID creating the network
+	 * @return int|false Network ID on success, false on failure
+	 */
+	public function create_network( string $name, int $created_by ): int|false {
+		global $wpdb;
+		$result = $wpdb->insert(
+			$this->networks_table,
+			array(
+				'name'       => $name,
+				'created_by' => $created_by,
+			),
+			array( '%s', '%d' )
+		);
+		return $result ? $wpdb->insert_id : false;
+	}
 
-    /**
-     * Get network by ID
-     *
-     * @param int $network_id Network ID
-     * @return object|null Network data or null if not found
-     */
-    public function get_network(int $network_id): ?object
-    {
-        global $wpdb;
-        return $wpdb->get_row(
-            $wpdb->prepare(
+	/**
+	 * Get network by ID
+	 *
+	 * @param int $network_id Network ID
+	 * @return object|null Network data or null if not found
+	 */
+	public function get_network( int $network_id ): ?object {
+		global $wpdb;
+		return $wpdb->get_row(
+			$wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT * FROM {$this->networks_table} WHERE id = %d",
-                $network_id
-            )
-        );
-    }
+				"SELECT * FROM {$this->networks_table} WHERE id = %d",
+				$network_id
+			)
+		);
+	}
 
-    /**
-     * Get networks by user ID (networks they created)
-     *
-     * @param int $user_id User ID
-     * @return array List of networks
-     */
-    public function get_user_networks(int $user_id): array
-    {
-        global $wpdb;
-        return $wpdb->get_results(
-            $wpdb->prepare(
+	/**
+	 * Get networks by user ID (networks they created)
+	 *
+	 * @param int $user_id User ID
+	 * @return array List of networks
+	 */
+	public function get_user_networks( int $user_id ): array {
+		global $wpdb;
+		return $wpdb->get_results(
+			$wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT * FROM {$this->networks_table} WHERE created_by = %d ORDER BY created_at DESC",
-                $user_id
-            )
-        );
-    }
+				"SELECT * FROM {$this->networks_table} WHERE created_by = %d ORDER BY created_at DESC",
+				$user_id
+			)
+		);
+	}
 
-    /**
-     * Send household invitation to network
-     *
-     * @param int $network_id Network ID
-     * @param int $household_id Household ID to invite
-     * @return int|false Invitation ID on success, false on failure
-     */
-    public function invite_household_to_network(int $network_id, int $household_id): int|false
-    {
-        global $wpdb;
-        $result = $wpdb->insert(
-            $this->network_households_table,
-            array(
-                'network_id'   => $network_id,
-                'household_id' => $household_id,
-                'status'       => 'pending',
-                'role'         => 'member',
-            ),
-            array( '%d', '%d', '%s', '%s' )
-        );
-        return $result ? $wpdb->insert_id : false;
-    }
+	/**
+	 * Send household invitation to network
+	 *
+	 * @param int $network_id Network ID
+	 * @param int $household_id Household ID to invite
+	 * @return int|false Invitation ID on success, false on failure
+	 */
+	public function invite_household_to_network( int $network_id, int $household_id ): int|false {
+		global $wpdb;
+		$result = $wpdb->insert(
+			$this->network_households_table,
+			array(
+				'network_id'   => $network_id,
+				'household_id' => $household_id,
+				'status'       => 'pending',
+				'role'         => 'member',
+			),
+			array( '%d', '%d', '%s', '%s' )
+		);
+		return $result ? $wpdb->insert_id : false;
+	}
 
-    /**
-     * Accept network invitation
-     *
-     * @param int $invitation_id Invitation ID
-     * @return bool Success
-     */
-    public function accept_network_invitation(int $invitation_id): bool
-    {
-        global $wpdb;
-        $result = $wpdb->update(
-            $this->network_households_table,
-            array(
-                'status'    => 'accepted',
-                'joined_at' => current_time('mysql'),
-            ),
-            array( 'id' => $invitation_id ),
-            array( '%s', '%s' ),
-            array( '%d' )
-        );
-        return false !== $result;
-    }
+	/**
+	 * Accept network invitation
+	 *
+	 * @param int $invitation_id Invitation ID
+	 * @return bool Success
+	 */
+	public function accept_network_invitation( int $invitation_id ): bool {
+		global $wpdb;
+		$result = $wpdb->update(
+			$this->network_households_table,
+			array(
+				'status'    => 'accepted',
+				'joined_at' => current_time( 'mysql' ),
+			),
+			array( 'id' => $invitation_id ),
+			array( '%s', '%s' ),
+			array( '%d' )
+		);
+		return false !== $result;
+	}
 
-    /**
-     * Reject network invitation
-     *
-     * @param int $invitation_id Invitation ID
-     * @return bool Success
-     */
-    public function reject_network_invitation(int $invitation_id): bool
-    {
-        global $wpdb;
-        $result = $wpdb->update(
-            $this->network_households_table,
-            array( 'status' => 'rejected' ),
-            array( 'id' => $invitation_id ),
-            array( '%s' ),
-            array( '%d' )
-        );
-        return false !== $result;
-    }
+	/**
+	 * Reject network invitation
+	 *
+	 * @param int $invitation_id Invitation ID
+	 * @return bool Success
+	 */
+	public function reject_network_invitation( int $invitation_id ): bool {
+		global $wpdb;
+		$result = $wpdb->update(
+			$this->network_households_table,
+			array( 'status' => 'rejected' ),
+			array( 'id' => $invitation_id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+		return false !== $result;
+	}
 
-    /**
-     * Remove household from network
-     *
-     * @param int $network_id Network ID
-     * @param int $household_id Household ID to remove
-     * @return bool Success
-     */
-    public function remove_household_from_network(int $network_id, int $household_id): bool
-    {
-        global $wpdb;
-        $result = $wpdb->delete(
-            $this->network_households_table,
-            array(
-                'network_id'   => $network_id,
-                'household_id' => $household_id,
-            ),
-            array( '%d', '%d' )
-        );
-        return false !== $result;
-    }
+	/**
+	 * Remove household from network
+	 *
+	 * @param int $network_id Network ID
+	 * @param int $household_id Household ID to remove
+	 * @return bool Success
+	 */
+	public function remove_household_from_network( int $network_id, int $household_id ): bool {
+		global $wpdb;
+		$result = $wpdb->delete(
+			$this->network_households_table,
+			array(
+				'network_id'   => $network_id,
+				'household_id' => $household_id,
+			),
+			array( '%d', '%d' )
+		);
+		return false !== $result;
+	}
 
-    /**
-     * Get network households with status
-     *
-     * @param int    $network_id Network ID
-     * @param string $status Optional status filter
-     * @return array List of households in network
-     */
-    public function get_network_households(int $network_id, string $status = ''): array
-    {
-        global $wpdb;
-        $sql = "SELECT nh.*, h.name as household_name, h.created_by as household_owner 
+	/**
+	 * Get network households with status
+	 *
+	 * @param int    $network_id Network ID
+	 * @param string $status Optional status filter
+	 * @return array List of households in network
+	 */
+	public function get_network_households( int $network_id, string $status = '' ): array {
+		global $wpdb;
+		$sql    = "SELECT nh.*, h.name as household_name, h.created_by as household_owner 
 				FROM {$this->network_households_table} nh 
 				JOIN {$this->households_table} h ON nh.household_id = h.id 
 				WHERE nh.network_id = %d";
-        $params = array( $network_id );
+		$params = array( $network_id );
 
-        if (! empty($status)) {
-            $sql .= ' AND nh.status = %s';
-            $params[] = $status;
-        }
+		if ( ! empty( $status ) ) {
+			$sql     .= ' AND nh.status = %s';
+			$params[] = $status;
+		}
 
-        $sql .= ' ORDER BY nh.invited_at DESC';
+		$sql .= ' ORDER BY nh.invited_at DESC';
 
-        return $wpdb->get_results($wpdb->prepare($sql, $params)); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-    }
+		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
 
-    /**
-     * Get household invitations
-     *
-     * @param int    $household_id Household ID
-     * @param string $status Optional status filter
-     * @return array List of invitations for household
-     */
-    public function get_household_invitations(int $household_id, string $status = 'pending'): array
-    {
-        global $wpdb;
-        $sql = "SELECT nh.*, n.name as network_name, n.created_by as network_owner 
+	/**
+	 * Get household invitations
+	 *
+	 * @param int    $household_id Household ID
+	 * @param string $status Optional status filter
+	 * @return array List of invitations for household
+	 */
+	public function get_household_invitations( int $household_id, string $status = 'pending' ): array {
+		global $wpdb;
+		$sql    = "SELECT nh.*, n.name as network_name, n.created_by as network_owner 
 				FROM {$this->network_households_table} nh 
 				JOIN {$this->networks_table} n ON nh.network_id = n.id 
 				WHERE nh.household_id = %d";
-        $params = array( $household_id );
+		$params = array( $household_id );
 
-        if (! empty($status)) {
-            $sql .= ' AND nh.status = %s';
-            $params[] = $status;
-        }
+		if ( ! empty( $status ) ) {
+			$sql     .= ' AND nh.status = %s';
+			$params[] = $status;
+		}
 
-        $sql .= ' ORDER BY nh.invited_at DESC';
+		$sql .= ' ORDER BY nh.invited_at DESC';
 
-        return $wpdb->get_results($wpdb->prepare($sql, $params)); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-    }
+		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+	}
 
-    /**
-     * Get network size (accepted households only)
-     *
-     * @param int $network_id Network ID
-     * @return int Number of accepted households in network
-     */
-    public function get_network_size(int $network_id): int
-    {
-        global $wpdb;
-        return (int) $wpdb->get_var(
-            $wpdb->prepare(
+	/**
+	 * Get network size (accepted households only)
+	 *
+	 * @param int $network_id Network ID
+	 * @return int Number of accepted households in network
+	 */
+	public function get_network_size( int $network_id ): int {
+		global $wpdb;
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND status = 'accepted'",
-                $network_id
-            )
-        );
-    }
+				"SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND status = 'accepted'",
+				$network_id
+			)
+		);
+	}
 
-    /**
-     * Check if household is already in network
-     *
-     * @param int $network_id Network ID
-     * @param int $household_id Household ID
-     * @return bool True if household is already in network (any status)
-     */
-    public function is_household_in_network(int $network_id, int $household_id): bool
-    {
-        global $wpdb;
-        $count = $wpdb->get_var(
-            $wpdb->prepare(
+	/**
+	 * Check if household is already in network
+	 *
+	 * @param int $network_id Network ID
+	 * @param int $household_id Household ID
+	 * @return bool True if household is already in network (any status)
+	 */
+	public function is_household_in_network( int $network_id, int $household_id ): bool {
+		global $wpdb;
+		$count = $wpdb->get_var(
+			$wpdb->prepare(
                 // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                "SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND household_id = %d",
-                $network_id,
-                $household_id
-            )
-        );
-        return (int) $count > 0;
-    }
+				"SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND household_id = %d",
+				$network_id,
+				$household_id
+			)
+		);
+		return (int) $count > 0;
+	}
 
-    /**
-     * Get invitation by ID
-     *
-     * @param int $invitation_id Invitation ID
-     * @return object|null Invitation data or null if not found
-     */
-    public function get_invitation(int $invitation_id): ?object
-    {
-        global $wpdb;
-        return $wpdb->get_row(
-            $wpdb->prepare(
-                "SELECT nh.*, n.name as network_name, h.name as household_name 
+	/**
+	 * Get invitation by ID
+	 *
+	 * @param int $invitation_id Invitation ID
+	 * @return object|null Invitation data or null if not found
+	 */
+	public function get_invitation( int $invitation_id ): ?object {
+		global $wpdb;
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT nh.*, n.name as network_name, h.name as household_name 
 				 FROM {$this->network_households_table} nh 
 				 JOIN {$this->networks_table} n ON nh.network_id = n.id 
 				 JOIN {$this->households_table} h ON nh.household_id = h.id 
 				 WHERE nh.id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-                $invitation_id
-            )
-        );
-    }
+				$invitation_id
+			)
+		);
+	}
 }

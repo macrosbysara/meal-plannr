@@ -15,15 +15,15 @@
 use MealPlannr\Theme_Init;
 
 // Prevent direct access
-if (! defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-$plugin_dir = plugin_dir_path(__FILE__);
+$plugin_dir = plugin_dir_path( __FILE__ );
 require_once $plugin_dir . 'includes/class-theme-init.php';
 
 $theme_init = new Theme_Init();
 
 // Register activation and deactivation hooks
-register_activation_hook(__FILE__, array( $theme_init, 'init' ));
-register_deactivation_hook(__FILE__, array( $theme_init, 'cleanup' ));
+register_activation_hook( __FILE__, array( $theme_init, 'init' ) );
+register_deactivation_hook( __FILE__, array( $theme_init, 'cleanup' ) );
