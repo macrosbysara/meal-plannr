@@ -150,6 +150,20 @@ class CPT_Handler {
 					'feeds' => false,
 				),
 				'delete_with_user' => false,
+				'capability_type'  => 'recipe',
+				'capabilities'     => array(
+					'edit_post'              => 'edit_recipes',
+					'edit_posts'             => 'edit_recipes',
+					'edit_others_posts'      => 'edit_recipes',
+					'publish_posts'          => 'publish_recipes',
+					'read_post'              => 'read',
+					'read_private_posts'     => 'read',
+					'delete_post'            => 'delete_recipes',
+					'delete_posts'           => 'delete_recipes',
+					'delete_private_posts'   => 'delete_recipes',
+					'delete_published_posts' => 'delete_recipes',
+					'delete_others_posts'    => 'delete_recipes',
+				),
 				'template'         => array(
 					array(
 						'core/post-featured-image',

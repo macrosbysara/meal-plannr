@@ -9,7 +9,7 @@ namespace MealPlannr;
 
 /**
  * Recipe Access Service
- * 
+ *
  * Handles access control for recipe sharing based on network membership
  */
 class Recipe_Access_Service {
@@ -74,7 +74,8 @@ class Recipe_Access_Service {
 		global $wpdb;
 		$count = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$this->mp_db->household_members_table} WHERE household_id = %d AND user_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT COUNT(*) FROM {$this->mp_db->household_members_table} WHERE household_id = %d AND user_id = %d",
 				$household_id,
 				$user_id
 			)
@@ -100,8 +101,8 @@ class Recipe_Access_Service {
 		global $wpdb;
 		$count = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$this->mp_db->network_households_table} 
-				 WHERE network_id = %d AND household_id = %d AND status = 'accepted'", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT COUNT(*) FROM {$this->mp_db->network_households_table} WHERE network_id = %d AND household_id = %d AND status = 'accepted'",
 				$network_id,
 				$user_household_id
 			)
@@ -119,7 +120,8 @@ class Recipe_Access_Service {
 		global $wpdb;
 		$household_id = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT household_id FROM {$this->mp_db->household_members_table} WHERE user_id = %d LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT household_id FROM {$this->mp_db->household_members_table} WHERE user_id = %d LIMIT 1",
 				$user_id
 			)
 		);
@@ -136,7 +138,8 @@ class Recipe_Access_Service {
 		global $wpdb;
 		return $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$this->mp_db->recipe_shares_table} WHERE recipe_id = %d LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT * FROM {$this->mp_db->recipe_shares_table} WHERE recipe_id = %d LIMIT 1",
 				$recipe_id
 			)
 		);
@@ -145,9 +148,9 @@ class Recipe_Access_Service {
 	/**
 	 * Set recipe sharing settings
 	 *
-	 * @param int    $recipe_id Recipe ID (post ID)
-	 * @param string $visibility Visibility level (private, household, network, public)
-	 * @param int    $user_id User ID setting the sharing
+	 * @param int      $recipe_id Recipe ID (post ID)
+	 * @param string   $visibility Visibility level (private, household, network, public)
+	 * @param int      $user_id User ID setting the sharing
 	 * @param int|null $household_id Household ID (for household visibility)
 	 * @param int|null $network_id Network ID (for network visibility)
 	 * @return bool Success
@@ -166,20 +169,20 @@ class Recipe_Access_Service {
 		}
 
 		// Validate required parameters
-		if ( $visibility === 'household' && ! $household_id ) {
+		if ( 'household' === $visibility && ! $household_id ) {
 			return false;
 		}
-		if ( $visibility === 'network' && ! $network_id ) {
+		if ( 'network' === $visibility && ! $network_id ) {
 			return false;
 		}
 
 		// For household visibility, ensure user is in the household
-		if ( $visibility === 'household' && ! $this->can_user_access_household_recipe( $household_id, $user_id ) ) {
+		if ( 'household' === $visibility && ! $this->can_user_access_household_recipe( $household_id, $user_id ) ) {
 			return false;
 		}
 
 		// For network visibility, ensure user's household is in the network
-		if ( $visibility === 'network' && ! $this->can_user_access_network_recipe( $network_id, $user_id ) ) {
+		if ( 'network' === $visibility && ! $this->can_user_access_network_recipe( $network_id, $user_id ) ) {
 			return false;
 		}
 
@@ -187,7 +190,7 @@ class Recipe_Access_Service {
 
 		// Check if sharing settings already exist
 		$existing = $this->get_recipe_share_settings( $recipe_id );
-		
+
 		$data = array(
 			'recipe_id'    => $recipe_id,
 			'visibility'   => $visibility,
@@ -219,7 +222,7 @@ class Recipe_Access_Service {
 	/**
 	 * Get accessible recipes for user
 	 *
-	 * @param int $user_id User ID
+	 * @param int   $user_id User ID
 	 * @param array $args Optional query arguments
 	 * @return array List of accessible recipe IDs
 	 */
@@ -227,7 +230,7 @@ class Recipe_Access_Service {
 		global $wpdb;
 
 		$user_household_id = $this->get_user_household( $user_id );
-		
+
 		$sql = "SELECT DISTINCT p.ID, p.post_title 
 				FROM {$wpdb->posts} p 
 				LEFT JOIN {$this->mp_db->recipe_shares_table} rs ON p.ID = rs.recipe_id
@@ -242,15 +245,16 @@ class Recipe_Access_Service {
 					rs.id IS NULL
 				)
 				ORDER BY p.post_date DESC";
-
-		$params = array( 
-			$user_household_id ?: 0, 
-			$user_id, 
-			$user_household_id ?: 0 
+		// phpcs:disable Universal.Operators.DisallowShortTernary.Found
+		$params = array(
+			$user_household_id ?: 0,
+			$user_id,
+			$user_household_id ?: 0,
 		);
+		// phpcs:enable Universal.Operators.DisallowShortTernary.Found
 
 		if ( isset( $args['limit'] ) ) {
-			$sql .= ' LIMIT %d';
+			$sql     .= ' LIMIT %d';
 			$params[] = (int) $args['limit'];
 		}
 
@@ -259,7 +263,7 @@ class Recipe_Access_Service {
 
 	/**
 	 * Filter recipe query based on user access
-	 * 
+	 *
 	 * Can be used as a filter on WP_Query or get_posts
 	 *
 	 * @param string $where WHERE clause
@@ -268,15 +272,18 @@ class Recipe_Access_Service {
 	 */
 	public function filter_recipe_query( string $where, object $query ): string {
 		// Only apply to recipe queries for logged-in users
-		if ( ! is_user_logged_in() || ! isset( $query->query_vars['post_type'] ) || $query->query_vars['post_type'] !== 'recipe' ) {
+		if ( ! is_user_logged_in()
+			|| ! isset( $query->query_vars['post_type'] )
+			|| 'recipe' !== $query->query_vars['post_type']
+		) {
 			return $where;
 		}
 
-		$user_id = get_current_user_id();
+		$user_id           = get_current_user_id();
 		$user_household_id = $this->get_user_household( $user_id );
 
 		global $wpdb;
-
+		// phpcs:disable Universal.Operators.DisallowShortTernary.Found
 		$access_clause = "
 			AND (
 				{$wpdb->posts}.post_author = {$user_id}
@@ -299,6 +306,7 @@ class Recipe_Access_Service {
 					WHERE rs2.recipe_id = {$wpdb->posts}.ID
 				)
 			)";
+			// phpcs:enable Universal.Operators.DisallowShortTernary.Found
 
 		return $where . $access_clause;
 	}
@@ -311,7 +319,7 @@ class Recipe_Access_Service {
 	 */
 	public function get_recipe_sharing_status( int $recipe_id ): array {
 		$recipe_share = $this->get_recipe_share_settings( $recipe_id );
-		
+
 		if ( ! $recipe_share ) {
 			return array(
 				'visibility'   => 'private',

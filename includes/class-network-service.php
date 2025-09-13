@@ -9,7 +9,7 @@ namespace MealPlannr;
 
 /**
  * Network Service
- * 
+ *
  * Handles network management business logic including invitations, membership, and removal
  */
 class Network_Service {
@@ -24,7 +24,7 @@ class Network_Service {
 	/**
 	 * Maximum households per network
 	 */
-	const MAX_HOUSEHOLDS_PER_NETWORK = 10;
+	public const MAX_HOUSEHOLDS_PER_NETWORK = 10;
 
 	/**
 	 * Constructor
@@ -169,7 +169,7 @@ class Network_Service {
 		}
 
 		// Check if invitation is pending
-		if ( $invitation->status !== 'pending' ) {
+		if ( 'pending' !== $invitation->status ) {
 			return array(
 				'success' => false,
 				'error'   => 'Invitation has already been ' . $invitation->status,
@@ -225,7 +225,7 @@ class Network_Service {
 		}
 
 		// Check if invitation is pending
-		if ( $invitation->status !== 'pending' ) {
+		if ( 'pending' !== $invitation->status ) {
 			return array(
 				'success' => false,
 				'error'   => 'Invitation has already been ' . $invitation->status,
@@ -305,10 +305,11 @@ class Network_Service {
 	 */
 	private function get_user_household( int $user_id ): ?int {
 		global $wpdb;
-		$mp_db = new Table_Handler();
+		$mp_db        = new Table_Handler();
 		$household_id = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT household_id FROM {$mp_db->household_members_table} WHERE user_id = %d AND role = 'owner' LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT household_id FROM {$mp_db->household_members_table} WHERE user_id = %d AND role = 'owner' LIMIT 1",
 				$user_id
 			)
 		);
@@ -323,10 +324,11 @@ class Network_Service {
 	 */
 	private function get_household_owner( int $household_id ): ?int {
 		global $wpdb;
-		$mp_db = new Table_Handler();
+		$mp_db   = new Table_Handler();
 		$user_id = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT user_id FROM {$mp_db->household_members_table} WHERE household_id = %d AND role = 'owner' LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT user_id FROM {$mp_db->household_members_table} WHERE household_id = %d AND role = 'owner' LIMIT 1",
 				$household_id
 			)
 		);
@@ -372,8 +374,8 @@ class Network_Service {
 			home_url()
 		);
 
-		$subject = 'Network Invitation: ' . $invitation->network_name;
-		$message = "You have been invited to join the network '{$invitation->network_name}'.\n\n";
+		$subject  = 'Network Invitation: ' . $invitation->network_name;
+		$message  = "You have been invited to join the network '{$invitation->network_name}'.\n\n";
 		$message .= "Accept: {$accept_url}\n";
 		$message .= "Reject: {$reject_url}\n";
 

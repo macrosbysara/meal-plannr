@@ -20,4 +20,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $plugin_dir = plugin_dir_path( __FILE__ );
 require_once $plugin_dir . 'includes/class-theme-init.php';
-new Theme_Init();
+
+$theme_init = new Theme_Init();
+
+// Register activation and deactivation hooks
+register_activation_hook( __FILE__, array( $theme_init, 'init' ) );
+register_deactivation_hook( __FILE__, array( $theme_init, 'cleanup' ) );

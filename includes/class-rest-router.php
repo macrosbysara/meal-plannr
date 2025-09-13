@@ -16,6 +16,7 @@ use WP_REST_Server;
  * Class: Rest Router
  */
 class REST_Router {
+
 	/**
 	 * API Namespace
 	 *
@@ -456,10 +457,9 @@ class REST_Router {
 	/**
 	 * Get user networks
 	 *
-	 * @param WP_REST_Request $request The request
 	 * @return WP_REST_Response
 	 */
-	public function get_user_networks( WP_REST_Request $request ): WP_REST_Response {
+	public function get_user_networks(): WP_REST_Response {
 		$user_id  = get_current_user_id();
 		$networks = $this->mp_db->get_user_networks( $user_id );
 
@@ -503,7 +503,7 @@ class REST_Router {
 		$action        = $request['action'];
 		$user_id       = get_current_user_id();
 
-		if ( $action === 'accept' ) {
+		if ( 'accept' === $action ) {
 			$result = $this->network_service->accept_invitation( $invitation_id, $user_id );
 		} else {
 			$result = $this->network_service->reject_invitation( $invitation_id, $user_id );
@@ -571,7 +571,8 @@ class REST_Router {
 		global $wpdb;
 		$household_id = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT household_id FROM {$this->mp_db->household_members_table} WHERE user_id = %d AND role = 'owner' LIMIT 1", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT household_id FROM {$this->mp_db->household_members_table} WHERE user_id = %d AND role = 'owner' LIMIT 1",
 				$user_id
 			)
 		);
@@ -611,12 +612,12 @@ class REST_Router {
 		$network_id   = $request->get_param( 'network_id' );
 		$user_id      = get_current_user_id();
 
-		$success = $this->recipe_access_service->set_recipe_sharing( 
-			$recipe_id, 
-			$visibility, 
-			$user_id, 
-			$household_id, 
-			$network_id 
+		$success = $this->recipe_access_service->set_recipe_sharing(
+			$recipe_id,
+			$visibility,
+			$user_id,
+			$household_id,
+			$network_id
 		);
 
 		if ( $success ) {
@@ -660,7 +661,7 @@ class REST_Router {
 	public function get_accessible_recipes( WP_REST_Request $request ): WP_REST_Response {
 		$user_id = get_current_user_id();
 		$limit   = $request->get_param( 'limit' );
-		
+
 		$args = array();
 		if ( $limit ) {
 			$args['limit'] = $limit;

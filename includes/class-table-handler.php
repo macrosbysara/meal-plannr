@@ -303,7 +303,8 @@ class Table_Handler {
 		// Check if row exists for this post_id
 		$exists = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT id FROM `{$wpdb->prefix}meal_plannr_recipes` WHERE post_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT id FROM `{$wpdb->prefix}meal_plannr_recipes` WHERE post_id = %d",
 				$recipe_id
 			)
 		);
@@ -382,7 +383,8 @@ class Table_Handler {
 		global $wpdb;
 		return $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT * FROM {$this->networks_table} WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT * FROM {$this->networks_table} WHERE id = %d",
 				$network_id
 			)
 		);
@@ -398,7 +400,8 @@ class Table_Handler {
 		global $wpdb;
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$this->networks_table} WHERE created_by = %d ORDER BY created_at DESC", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT * FROM {$this->networks_table} WHERE created_by = %d ORDER BY created_at DESC",
 				$user_id
 			)
 		);
@@ -494,19 +497,19 @@ class Table_Handler {
 	 */
 	public function get_network_households( int $network_id, string $status = '' ): array {
 		global $wpdb;
-		$sql = "SELECT nh.*, h.name as household_name, h.created_by as household_owner 
+		$sql    = "SELECT nh.*, h.name as household_name, h.created_by as household_owner 
 				FROM {$this->network_households_table} nh 
 				JOIN {$this->households_table} h ON nh.household_id = h.id 
 				WHERE nh.network_id = %d";
 		$params = array( $network_id );
-		
+
 		if ( ! empty( $status ) ) {
-			$sql .= ' AND nh.status = %s';
+			$sql     .= ' AND nh.status = %s';
 			$params[] = $status;
 		}
-		
+
 		$sql .= ' ORDER BY nh.invited_at DESC';
-		
+
 		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
@@ -519,20 +522,20 @@ class Table_Handler {
 	 */
 	public function get_household_invitations( int $household_id, string $status = 'pending' ): array {
 		global $wpdb;
-		$sql = "SELECT nh.*, n.name as network_name, n.created_by as network_owner 
-				FROM {$this->network_households_table} nh 
-				JOIN {$this->networks_table} n ON nh.network_id = n.id 
-				WHERE nh.household_id = %d";
+		$sql    = 'SELECT nh.*, n.name as network_name, n.created_by as network_owner 
+				FROM `' . esc_sql( $this->network_households_table ) . '` nh 
+				JOIN `' . esc_sql( $this->networks_table ) . '` n ON nh.network_id = n.id 
+				WHERE nh.household_id = %d';
 		$params = array( $household_id );
-		
+
 		if ( ! empty( $status ) ) {
-			$sql .= ' AND nh.status = %s';
+			$sql     .= ' AND nh.status = %s';
 			$params[] = $status;
 		}
-		
+
 		$sql .= ' ORDER BY nh.invited_at DESC';
-		
-		return $wpdb->get_results( $wpdb->prepare( $sql, $params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+		return $wpdb->get_results( $wpdb->prepare( $sql, ...$params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**
@@ -545,8 +548,9 @@ class Table_Handler {
 		global $wpdb;
 		return (int) $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND status = 'accepted'", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$network_id
+				'SELECT COUNT(*) FROM `' . esc_sql( $this->network_households_table ) . '` WHERE network_id = %d AND status = %s',
+				$network_id,
+				'accepted'
 			)
 		);
 	}
@@ -560,9 +564,10 @@ class Table_Handler {
 	 */
 	public function is_household_in_network( int $network_id, int $household_id ): bool {
 		global $wpdb;
+
 		$count = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT COUNT(*) FROM {$this->network_households_table} WHERE network_id = %d AND household_id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'SELECT COUNT(*) FROM `' . esc_sql( $this->network_households_table ) . '` WHERE network_id = %d AND household_id = %d',
 				$network_id,
 				$household_id
 			)
@@ -580,11 +585,11 @@ class Table_Handler {
 		global $wpdb;
 		return $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT nh.*, n.name as network_name, h.name as household_name 
-				 FROM {$this->network_households_table} nh 
-				 JOIN {$this->networks_table} n ON nh.network_id = n.id 
-				 JOIN {$this->households_table} h ON nh.household_id = h.id 
-				 WHERE nh.id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				'SELECT nh.*, n.name as network_name, h.name as household_name 
+				 FROM `' . esc_sql( $this->network_households_table ) . '` nh 
+				 JOIN `' . esc_sql( $this->networks_table ) . '` n ON nh.network_id = n.id 
+				 JOIN `' . esc_sql( $this->households_table ) . '` h ON nh.household_id = h.id 
+				 WHERE nh.id = %d',
 				$invitation_id
 			)
 		);

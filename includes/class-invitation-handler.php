@@ -9,7 +9,7 @@ namespace MealPlannr;
 
 /**
  * Invitation Handler
- * 
+ *
  * Handles public invitation links from emails
  */
 class Invitation_Handler {
@@ -62,13 +62,13 @@ class Invitation_Handler {
 				),
 				home_url()
 			);
-			wp_redirect( wp_login_url( $return_url ) );
+			wp_safe_redirect( wp_login_url( $return_url ) );
 			exit;
 		}
 
 		$user_id = get_current_user_id();
 
-		if ( $action === 'accept_network_invitation' ) {
+		if ( 'accept_network_invitation' === $action ) {
 			$result = $this->network_service->accept_invitation( $invitation_id, $user_id );
 		} else {
 			$result = $this->network_service->reject_invitation( $invitation_id, $user_id );
@@ -90,7 +90,7 @@ class Invitation_Handler {
 	private function show_success_message( string $message ): void {
 		add_action(
 			'wp_head',
-			function() use ( $message ) {
+			function () use ( $message ) {
 				echo '<style>
 					.invitation-message { 
 						background: #d4edda; 
@@ -108,7 +108,7 @@ class Invitation_Handler {
 
 		add_action(
 			'wp_footer',
-			function() use ( $message ) {
+			function () use ( $message ) {
 				echo '<script>
 					document.addEventListener("DOMContentLoaded", function() {
 						var body = document.querySelector("body");
@@ -130,7 +130,7 @@ class Invitation_Handler {
 	private function show_error_message( string $message ): void {
 		add_action(
 			'wp_head',
-			function() use ( $message ) {
+			function () use ( $message ) {
 				echo '<style>
 					.invitation-message { 
 						background: #f8d7da; 
@@ -148,7 +148,7 @@ class Invitation_Handler {
 
 		add_action(
 			'wp_footer',
-			function() use ( $message ) {
+			function () use ( $message ) {
 				echo '<script>
 					document.addEventListener("DOMContentLoaded", function() {
 						var body = document.querySelector("body");
