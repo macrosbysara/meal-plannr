@@ -17,8 +17,9 @@ use MealPlannr\Theme_Init;
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
 spl_autoload_register(
-	function ( $class ) {
+	function ( $class ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.classFound
 		// Only autoload MealPlannr classes
 		if ( strpos( $class, 'MealPlannr\\' ) !== 0 ) {
 			return;
@@ -26,15 +27,15 @@ spl_autoload_register(
 		$base_dir       = __DIR__ . '/includes/';
 		$relative_class = substr( $class, strlen( 'MealPlannr\\' ) );
 		$relative_class = str_replace( '\\', DIRECTORY_SEPARATOR, $relative_class );
-		 // Find last directory separator for filename
-        $last_sep = strrpos( $relative_class, DIRECTORY_SEPARATOR );
-        if ( $last_sep !== false ) {
-            $dir  = substr( $relative_class, 0, $last_sep + 1 );
-            $file = substr( $relative_class, $last_sep + 1 );
-            $path = $base_dir . strtolower($dir) . 'class-' . strtolower( str_replace( '_', '-', $file ) ) . '.php';
-        } else {
-            $path = $base_dir . 'class-' . strtolower( str_replace( '_', '-', $relative_class ) ) . '.php';
-        }
+		// Find last directory separator for filename
+		$last_sep = strrpos( $relative_class, DIRECTORY_SEPARATOR );
+		if ( false !== $last_sep ) {
+			$dir  = substr( $relative_class, 0, $last_sep + 1 );
+			$file = substr( $relative_class, $last_sep + 1 );
+			$path = $base_dir . strtolower( $dir ) . 'class-' . strtolower( str_replace( '_', '-', $file ) ) . '.php';
+		} else {
+			$path = $base_dir . 'class-' . strtolower( str_replace( '_', '-', $relative_class ) ) . '.php';
+		}
 
 		if ( file_exists( $path ) ) {
 			require_once $path;
