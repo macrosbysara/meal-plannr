@@ -16,6 +16,14 @@
 		"phpcs": "phpcs meal-plannr.php includes/ --extensions=php --ignore=build/",
 		"phpcbf": "phpcbf meal-plannr.php includes/ --extensions=php --ignore=build/"
 	},
+	"autoload": {
+		"psr-4": {
+			"MealPlannr\\": "includes/",
+			"MealPlannr\\Admin\\": "includes/admin/",
+			"MealPlannr\\DB\\": "includes/db/",
+			"MealPlannr\\Services\\": "includes/services/"
+		}
+	},
 	"config": {
 		"allow-plugins": {
 			"composer/installers": true,

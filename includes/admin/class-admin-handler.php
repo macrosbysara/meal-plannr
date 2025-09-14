@@ -5,7 +5,7 @@
  * @package MealPlannr
  */
 
-namespace MealPlannr;
+namespace MealPlannr\Admin;
 
 /**
  * Class Admin_Handler

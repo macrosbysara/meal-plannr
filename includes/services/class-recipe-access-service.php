@@ -5,7 +5,7 @@
  * @package MealPlannr
  */
 
-namespace MealPlannr;
+namespace MealPlannr\Services;
 
 /**
  * Recipe Access Service

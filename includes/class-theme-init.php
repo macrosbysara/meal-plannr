@@ -7,6 +7,9 @@
 
 namespace MealPlannr;
 
+use MealPlannr\Admin\Admin_Handler;
+use MealPlannr\DB\Table_Handler;
+
 /**
  * Class Theme_Init
  *
@@ -30,6 +33,7 @@ class Theme_Init {
 	public function init() {
 		$table_handler = new Table_Handler();
 		$admin_handler = new Admin_Handler();
+		$table_handler->create_tables();
 		$admin_handler->register_roles();
 	}
 
@@ -45,21 +49,17 @@ class Theme_Init {
 	 * Load required files.
 	 */
 	private function load_required_files() {
-		$base_path = plugin_dir_path( __DIR__ ) . 'includes/';
+		$plugin_dir = plugin_dir_path( __DIR__ );
+		if ( file_exists( $plugin_dir . 'vendor/autoload.php' ) ) {
+			require_once $plugin_dir . 'vendor/autoload.php';
+		}
+		$base_path = $plugin_dir . 'includes/';
 		$files     = array(
-			'cpt-handler'           => 'CPT_Handler',
-			'table-handler'         => null,
-			'network-service'       => null,
-			'recipe-access-service' => null,
-			'invitation-handler'    => 'Invitation_Handler',
-			'rest-router'           => 'REST_Router',
-			'admin-handler'         => 'Admin_Handler',
+			'cpt-handler'        => 'CPT_Handler',
 		);
 		foreach ( $files as $file => $class ) {
 			require_once $base_path . "class-{$file}.php";
-			if ( ! is_null( $class ) ) {
-				new ( __NAMESPACE__ . '\\' . $class )();
-			}
+			new ( __NAMESPACE__ . '\\' . $class )();
 		}
 	}
 

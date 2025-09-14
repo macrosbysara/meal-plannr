@@ -5,7 +5,7 @@
  * @package MealPlannr
  */
 
-namespace MealPlannr;
+namespace MealPlannr\API;
 
 use WP_Error;
 use WP_REST_Request;

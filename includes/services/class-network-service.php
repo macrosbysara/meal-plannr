@@ -5,7 +5,11 @@
  * @package MealPlannr
  */
 
-namespace MealPlannr;
+namespace MealPlannr\Services;
+
+use MealPlannr\DB\Households_Table;
+use MealPlannr\DB\Network_Households_Table;
+use MealPlannr\DB\Networks_Table;
 
 /**
  * Network Service
@@ -17,9 +21,30 @@ class Network_Service {
 	/**
 	 * MealPlannr DB Handler
 	 *
-	 * @var Table_Handler $mp_db
+	 * @var Network_Households_Table $network_households_db
 	 */
-	private Table_Handler $mp_db;
+	private Network_Households_Table $network_households_db;
+
+	/**
+	 * MealPlannr DB Handler
+	 *
+	 * @var Networks_Table $networks_db
+	 */
+	private Networks_Table $networks_db;
+
+	/**
+	 * MealPlannr DB Handler
+	 *
+	 * @var Households_Table $household_db
+	 */
+	private Households_Table $household_db;
+
+	/**
+	 * Membership Service
+	 *
+	 * @var Network_Membership_Services $memberships_service
+	 */
+	private Network_Membership_Services $memberships_service;
 
 	/**
 	 * Maximum households per network
@@ -30,7 +55,10 @@ class Network_Service {
 	 * Constructor
 	 */
 	public function __construct() {
-		$this->mp_db = new Table_Handler();
+		$this->household_db          = new Households_Table();
+		$this->network_households_db = new Network_Households_Table();
+		$this->networks_db           = new Networks_Table();
+		$this->memberships_service   = new Network_Membership_Services( $this->household_db, $this->networks_db, $this->network_households_db );
 	}
 
 	/**
@@ -42,7 +70,7 @@ class Network_Service {
 	 */
 	public function create_network( string $name, int $user_id ): array {
 		// Get or create household for user
-		$household_id = $this->get_user_household( $user_id );
+		$household_id = $this->household_db->get_user_household( $user_id );
 		if ( ! $household_id ) {
 			return array(
 				'success' => false,
@@ -50,7 +78,7 @@ class Network_Service {
 			);
 		}
 
-		$network_id = $this->mp_db->create_network( $name, $user_id );
+		$network_id = $this->networks_db->create_network( $name, $user_id );
 		if ( ! $network_id ) {
 			return array(
 				'success' => false,
@@ -59,14 +87,14 @@ class Network_Service {
 		}
 
 		// Add creator's household to network as owner with accepted status
-		$invitation_id = $this->mp_db->invite_household_to_network( $network_id, $household_id );
+		$invitation_id = $this->network_households_db->invite_household_to_network( $network_id, $household_id );
 		if ( $invitation_id ) {
 			// Auto-accept the creator's household
-			$this->mp_db->accept_network_invitation( $invitation_id );
+			$this->network_households_db->accept_network_invitation( $invitation_id );
 			// Update role to owner
 			global $wpdb;
 			$wpdb->update(
-				$this->mp_db->network_households_table,
+				$this->network_households_db->table_name,
 				array( 'role' => 'owner' ),
 				array( 'id' => $invitation_id ),
 				array( '%s' ),
@@ -91,7 +119,7 @@ class Network_Service {
 	 */
 	public function invite_household( int $network_id, int $household_id, int $inviter_user_id ): array {
 		// Validate network exists
-		$network = $this->mp_db->get_network( $network_id );
+		$network = $this->networks_db->get_network( $network_id );
 		if ( ! $network ) {
 			return array(
 				'success' => false,
@@ -108,7 +136,7 @@ class Network_Service {
 		}
 
 		// Check network size limit
-		$current_size = $this->mp_db->get_network_size( $network_id );
+		$current_size = $this->network_households_db->get_network_size( $network_id );
 		if ( $current_size >= self::MAX_HOUSEHOLDS_PER_NETWORK ) {
 			return array(
 				'success' => false,
@@ -117,7 +145,7 @@ class Network_Service {
 		}
 
 		// Check if household is already in network
-		if ( $this->mp_db->is_household_in_network( $network_id, $household_id ) ) {
+		if ( $this->network_households_db->is_household_in_network( $network_id, $household_id ) ) {
 			return array(
 				'success' => false,
 				'error'   => 'Household is already in this network',
@@ -125,7 +153,7 @@ class Network_Service {
 		}
 
 		// Create invitation
-		$invitation_id = $this->mp_db->invite_household_to_network( $network_id, $household_id );
+		$invitation_id = $this->network_households_db->invite_household_to_network( $network_id, $household_id );
 		if ( ! $invitation_id ) {
 			return array(
 				'success' => false,
@@ -151,7 +179,7 @@ class Network_Service {
 	 * @return array Result with success status and data/error
 	 */
 	public function accept_invitation( int $invitation_id, int $user_id ): array {
-		$invitation = $this->mp_db->get_invitation( $invitation_id );
+		$invitation = $this->memberships_service->get_invitation( $invitation_id );
 		if ( ! $invitation ) {
 			return array(
 				'success' => false,
@@ -160,7 +188,7 @@ class Network_Service {
 		}
 
 		// Check if user is household owner
-		$household_owner = $this->get_household_owner( $invitation->household_id );
+		$household_owner = $this->household_db->get_household_owner( $invitation->household_id );
 		if ( ! $household_owner || (int) $household_owner !== $user_id ) {
 			return array(
 				'success' => false,
@@ -177,7 +205,7 @@ class Network_Service {
 		}
 
 		// Check network size limit again
-		$current_size = $this->mp_db->get_network_size( $invitation->network_id );
+		$current_size = $this->network_households_db->get_network_size( $invitation->network_id );
 		if ( $current_size >= self::MAX_HOUSEHOLDS_PER_NETWORK ) {
 			return array(
 				'success' => false,
@@ -185,7 +213,7 @@ class Network_Service {
 			);
 		}
 
-		$success = $this->mp_db->accept_network_invitation( $invitation_id );
+		$success = $this->network_households_db->accept_network_invitation( $invitation_id );
 		if ( ! $success ) {
 			return array(
 				'success' => false,
@@ -207,7 +235,7 @@ class Network_Service {
 	 * @return array Result with success status and data/error
 	 */
 	public function reject_invitation( int $invitation_id, int $user_id ): array {
-		$invitation = $this->mp_db->get_invitation( $invitation_id );
+		$invitation = $this->memberships_service->get_invitation( $invitation_id );
 		if ( ! $invitation ) {
 			return array(
 				'success' => false,
@@ -216,7 +244,7 @@ class Network_Service {
 		}
 
 		// Check if user is household owner
-		$household_owner = $this->get_household_owner( $invitation->household_id );
+		$household_owner = $this->household_db->get_household_owner( $invitation->household_id );
 		if ( ! $household_owner || (int) $household_owner !== $user_id ) {
 			return array(
 				'success' => false,
@@ -232,7 +260,7 @@ class Network_Service {
 			);
 		}
 
-		$success = $this->mp_db->reject_network_invitation( $invitation_id );
+		$success = $this->network_households_db->reject_network_invitation( $invitation_id );
 		if ( ! $success ) {
 			return array(
 				'success' => false,
@@ -255,7 +283,7 @@ class Network_Service {
 	 * @return array Result with success status and data/error
 	 */
 	public function remove_household( int $network_id, int $household_id, int $remover_user_id ): array {
-		$network = $this->mp_db->get_network( $network_id );
+		$network = $this->networks_db->get_network( $network_id );
 		if ( ! $network ) {
 			return array(
 				'success' => false,
@@ -272,7 +300,7 @@ class Network_Service {
 		}
 
 		// Don't allow removing the owner's household
-		$owner_household_id = $this->get_user_household( $remover_user_id );
+		$owner_household_id = $this->household_db->get_user_household( $remover_user_id );
 		if ( $household_id === $owner_household_id ) {
 			return array(
 				'success' => false,
@@ -280,7 +308,7 @@ class Network_Service {
 			);
 		}
 
-		$success = $this->mp_db->remove_household_from_network( $network_id, $household_id );
+		$success = $this->network_households_db->remove_household_from_network( $network_id, $household_id );
 		if ( ! $success ) {
 			return array(
 				'success' => false,
@@ -297,43 +325,7 @@ class Network_Service {
 		);
 	}
 
-	/**
-	 * Get user's primary household
-	 *
-	 * @param int $user_id User ID
-	 * @return int|null Household ID or null if not found
-	 */
-	private function get_user_household( int $user_id ): ?int {
-		global $wpdb;
-		$mp_db        = new Table_Handler();
-		$household_id = $wpdb->get_var(
-			$wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				"SELECT household_id FROM {$mp_db->household_members_table} WHERE user_id = %d AND role = 'owner' LIMIT 1",
-				$user_id
-			)
-		);
-		return $household_id ? (int) $household_id : null;
-	}
 
-	/**
-	 * Get household owner
-	 *
-	 * @param int $household_id Household ID
-	 * @return int|null User ID of household owner or null if not found
-	 */
-	private function get_household_owner( int $household_id ): ?int {
-		global $wpdb;
-		$mp_db   = new Table_Handler();
-		$user_id = $wpdb->get_var(
-			$wpdb->prepare(
-                // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				"SELECT user_id FROM {$mp_db->household_members_table} WHERE household_id = %d AND role = 'owner' LIMIT 1",
-				$household_id
-			)
-		);
-		return $user_id ? (int) $user_id : null;
-	}
 
 	/**
 	 * Send invitation email
@@ -341,12 +333,12 @@ class Network_Service {
 	 * @param int $invitation_id Invitation ID
 	 */
 	private function send_invitation_email( int $invitation_id ): void {
-		$invitation = $this->mp_db->get_invitation( $invitation_id );
+		$invitation = $this->memberships_service->get_invitation( $invitation_id );
 		if ( ! $invitation ) {
 			return;
 		}
 
-		$household_owner_id = $this->get_household_owner( $invitation->household_id );
+		$household_owner_id = $this->household_db->get_household_owner( $invitation->household_id );
 		if ( ! $household_owner_id ) {
 			return;
 		}
@@ -389,12 +381,12 @@ class Network_Service {
 	 * @param int $household_id Household ID that was removed
 	 */
 	private function send_removal_email( int $network_id, int $household_id ): void {
-		$network = $this->mp_db->get_network( $network_id );
+		$network = $this->networks_db->get_network( $network_id );
 		if ( ! $network ) {
 			return;
 		}
 
-		$household_owner_id = $this->get_household_owner( $household_id );
+		$household_owner_id = $this->household_db->get_household_owner( $household_id );
 		if ( ! $household_owner_id ) {
 			return;
 		}
