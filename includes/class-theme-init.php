@@ -50,9 +50,6 @@ class Theme_Init {
 	 */
 	private function load_required_files() {
 		$plugin_dir = plugin_dir_path( __DIR__ );
-		if ( file_exists( $plugin_dir . 'vendor/autoload.php' ) ) {
-			require_once $plugin_dir . 'vendor/autoload.php';
-		}
 		$base_path = $plugin_dir . 'includes/';
 		$files     = array(
 			'cpt-handler'        => 'CPT_Handler',

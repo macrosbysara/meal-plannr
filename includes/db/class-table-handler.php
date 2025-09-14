@@ -24,6 +24,7 @@ class Table_Handler {
 			new Network_Households_Table(),
 			new Recipe_Shares_Table(),
 		);
+		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 		// Create all tables
 		foreach ( $tables as $table ) {
 			dbDelta( $table->create_table() );
