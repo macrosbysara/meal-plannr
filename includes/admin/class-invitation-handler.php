@@ -5,7 +5,9 @@
  * @package MealPlannr
  */
 
-namespace MealPlannr;
+namespace MealPlannr\Admin;
+
+use MealPlannr\Services\Network_Service;
 
 /**
  * Invitation Handler
