@@ -50,9 +50,9 @@ class Theme_Init {
 	 */
 	private function load_required_files() {
 		$plugin_dir = plugin_dir_path( __DIR__ );
-		$base_path = $plugin_dir . 'includes/';
-		$files     = array(
-			'cpt-handler'        => 'CPT_Handler',
+		$base_path  = $plugin_dir . 'includes/';
+		$files      = array(
+			'cpt-handler' => 'CPT_Handler',
 		);
 		foreach ( $files as $file => $class ) {
 			require_once $base_path . "class-{$file}.php";
