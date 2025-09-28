@@ -9,6 +9,7 @@
 namespace MealPlannr\DB;
 
 use MealPlannr\DB\Base_Table;
+use stdClass;
 
 /**
  * Class Households_Table
@@ -63,6 +64,48 @@ class Households_Table extends Base_Table {
 	}
 
 	/**
+	 * Get household by ID
+	 *
+	 * @param int $household_id Household ID
+	 * @return object|null Household data or null if not found
+	 */
+	public function get_household( int $household_id ): stdClass|null {
+		global $wpdb;
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				'SELECT * FROM %s WHERE id = %d LIMIT 1',
+				$this->table_name,
+				$household_id
+			),
+			OBJECT
+		);
+	}
+
+	/**
+	 * Check if user can manage household.
+	 *
+	 * @param int $user_id User ID.
+	 * @param int $household_id Household ID.
+	 * @return bool True if user can manage household.
+	 */
+	public function user_can_manage_household( int $user_id, int $household_id ): bool {
+		global $wpdb;
+
+		$role = $wpdb->get_var(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->prepare(
+				"SELECT role FROM {$this->table_name}
+				 WHERE household_id = %d AND user_id = %d",
+				$household_id,
+				$user_id
+			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
+
+		return 'owner' === $role || in_array( 'administrator', wp_get_current_user()->roles, true );
+	}
+
+	/**
 	 * Get household owner
 	 *
 	 * @param int $household_id Household ID
@@ -78,5 +121,30 @@ class Households_Table extends Base_Table {
 			)
 		);
 		return $user_id ? (int) $user_id : null;
+	}
+
+	/**
+	 * Create a new household.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $household_name Household name.
+	 * @return bool True on success, false on failure.
+	 */
+	public function create_household( $user_id, $household_name ): int|false {
+		global $wpdb;
+		$result = $wpdb->insert(
+			$this->table_name,
+			array(
+				'name'       => $household_name,
+				'created_by' => $user_id,
+			),
+			array( '%s', '%d' )
+		);
+
+		if ( ! $result ) {
+			return false;
+		}
+
+		return $wpdb->insert_id;
 	}
 }

@@ -44,4 +44,71 @@ class Household_Members_Table extends Base_Table {
 		) $charset_collate;";
 		return $household_members_sql;
 	}
+
+	/**
+	 * Get household members.
+	 *
+	 * @param int $household_id Household ID.
+	 * @return array Array of member objects.
+	 */
+	public function get_household_members( int $household_id ): array {
+		global $wpdb;
+
+		$members = $wpdb->get_results(
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->prepare(
+				"SELECT u.display_name, hm.role, hm.user_id
+				 FROM {$this->table_name} hm
+				 INNER JOIN {$wpdb->users} u ON hm.user_id = u.ID
+				 WHERE hm.household_id = %d
+				 ORDER BY hm.role = 'owner' DESC, u.display_name ASC",
+				$household_id
+			)
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		);
+
+		return $members;
+	}
+
+	/**
+	 * Check if a user is in a household.
+	 *
+	 * @param int $user_id User ID.
+	 * @return bool True if user is in household, false otherwise.
+	 */
+	public function is_user_in_household( $user_id ) {
+		global $wpdb;
+
+		$count = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM {$this->table_name} WHERE user_id = %d",
+				$user_id,
+			)
+		);
+
+		return $count > 0;
+	}
+
+	/**
+	 * Add user as owner to household.
+	 *
+	 * @param int $user_id User ID.
+	 * @param int $household_id Household ID.
+	 * @return bool True on success, false on failure.
+	 */
+	public function add_user_as_owner( int $user_id, int $household_id ): bool {
+		global $wpdb;
+
+		// Add user as owner
+		$result = $wpdb->insert(
+			$this->table_name,
+			array(
+				'household_id' => $household_id,
+				'user_id'      => $user_id,
+				'role'         => 'owner',
+			),
+			array( '%d', '%d', '%s' )
+		);
+		return (bool) $result;
+	}
 }
